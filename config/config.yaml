@@ -1,0 +1,42 @@
+version: 0.0.1
+
+server:
+  ip: localhost
+  port: 8080
+
+frontend-host: localhost:9000
+
+landlords:
+  frontend-host: landlords.pushyzheng.com
+  jwt-secret: 298b8610-6835-4d12-b8ae-efba3dbcccad
+  max-seconds-for-every-round: 30
+
+database:
+  driver: MySQL #SQLite MySQL
+#  url: jdbc:sqlite:db/landlords.sqlite3
+#  url: jdbc:mysql://localhost:3306/landlords?serverTimezone=GMT
+#  username:
+#  password:
+
+mysql:
+  address: [ docker.for.mac.localhost:3306 ]
+  username: root
+  password: 123456
+  database_name: landlord
+  max_open_conns: 100
+  max_idle_conns: 10
+  max_life_time: 5
+  log_level: 1 #1=slient 2=error 3=warn 4=info
+  slow_threshold: 500
+
+#token config
+tokenpolicy:
+  jwt_secret: 298b8610-6835-4d12-b8ae-efba3dbcccad
+  jwt_expire: 1 #token过期时间（天）
+
+websocket:
+  port: [ 80 ]
+  max_conn_num: 10000
+  max_msg_len: 4096
+  handshake_time_out: 10 #second
+  online_time_out: 10 #second
