@@ -5,30 +5,25 @@ import (
 	"landlord/biz"
 	"landlord/common/response"
 	"landlord/db"
-	"net/http"
+	"landlord/sdk/api"
 )
 
-func GenerateUser(c *gin.Context) {
-	userId := c.Param("userId")
-	user, err := biz.GenerateUser(userId)
-	if err != nil {
-		r.Error(http.StatusInternalServerError, err.Error(), c)
-		return
-	}
-	r.Success(user, c)
+var AchievementApi achievementApi
+
+type achievementApi struct {
+	api.Api
+	svc biz.AchievementSvc
 }
 
-func GetAchievementByUserId(c *gin.Context) {
+func (a *achievementApi) GetAchievementByUserId(c *gin.Context) {
+
 	userId := c.Param("userId")
 	if userId == "" {
-		r.Error(http.StatusBadRequest, "userId is empty", c)
 		return
 	}
 
-	achievement, err := biz.GetAchievementByUserId(userId)
-
-	if err != nil {
-		r.Error(http.StatusInternalServerError, err.Error(), c)
+	achievement := a.svc.GetAchievementByUserId(userId)
+	if achievement == nil || achievement.Id == "" {
 		return
 	}
 

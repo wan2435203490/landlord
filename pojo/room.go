@@ -60,19 +60,26 @@ func (r *Room) CheckPassword(password string) bool {
 }
 
 func (r *Room) GetAvailablePlayerId() int {
-	var ids, temp []int
+	n := len(AllPlayerIds)
+	ids, temp := make([]int, 0), make([]int, n)
 	copy(temp, AllPlayerIds)
 	for _, p := range r.PlayerList {
 		ids = append(ids, p.Id)
 	}
-	for _, i0 := range temp {
-		for j, i1 := range ids {
+
+	for _, i1 := range ids {
+		for j0, i0 := range temp {
 			if i1 == i0 {
-				temp = append(temp[:j], temp[j+1:]...)
+				temp = append(temp[:j0], temp[j0+1:]...)
 				break
 			}
 		}
 	}
+
+	if len(temp) == 0 {
+		panic("房间已满")
+	}
+
 	return temp[0]
 }
 

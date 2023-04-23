@@ -3,29 +3,52 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"landlord/api"
+	"landlord/sdk"
 )
+
+// WithContextDb middleware todo 统一优化
+func WithContextDb(c *gin.Context) {
+	c.Set("db", sdk.Runtime.GetDbByKey(c.Request.Host).WithContext(c))
+	c.Next()
+}
+
+// WithUserApi users
+func WithUserApi(c *gin.Context) {
+	api.UserApi.MakeContext(c)
+	c.Next()
+}
+func WithAuthApi(c *gin.Context) {
+	api.AuthApi.MakeContext(c)
+	c.Next()
+}
+func WithAchievementApi(c *gin.Context) {
+	api.AuthApi.MakeContext(c)
+	c.Next()
+}
 
 func InitRouter(engine *gin.Engine) {
 
-	//auth := engine.Group("/auth")
-	//{
-	engine.POST("/login", api.Login)
-	engine.GET("/qqLogin", api.QQLogin)
-	engine.GET("/qqLogin/qqCallback", api.QQCallback)
-	engine.GET("/401", api.PermissionDenied)
-	//}
+	engine.Use(WithContextDb)
 
-	users := engine.Group("/users")
+	//todo auth放到group
+	engine.Use(WithAuthApi)
+	engine.POST("/login", api.AuthApi.Login)
+	engine.GET("/qqLogin", api.AuthApi.QQLogin)
+	engine.GET("/qqLogin/qqCallback", api.AuthApi.QQCallback)
+	engine.GET("/401", api.AuthApi.PermissionDenied)
+
+	g1 := engine.Group("/users")
 	{
-		users.GET("/myself", api.Myself)
-		users.PUT("", api.UpdateUser)
+		g1.Use(WithUserApi)
+		g1.GET("/myself", api.UserApi.Myself)
+		g1.PUT("", api.UserApi.UpdateUser)
 	}
 
 	achievement := engine.Group("/achievement")
 	{
-		achievement.GET("/:userId", api.GetAchievementByUserId)
-		achievement.GET("/insert/:userId", api.GenerateUser)
-		achievement.GET("", api.GetAchievementByUserId)
+		g1.Use(WithAchievementApi)
+		achievement.GET("/:userId", api.AchievementApi.GetAchievementByUserId)
+		achievement.GET("", api.AchievementApi.GetAchievementByUserId)
 	}
 
 	chat := engine.Group("/chat")

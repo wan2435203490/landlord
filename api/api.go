@@ -7,7 +7,6 @@ import (
 	"landlord/biz"
 	"landlord/common/token"
 	"landlord/db"
-	"landlord/pojo/DTO"
 )
 
 func GetUser(c *gin.Context) *db.User {
@@ -35,15 +34,6 @@ func GetUser(c *gin.Context) *db.User {
 	err := json.Unmarshal(get.([]byte), &user)
 	if err != nil {
 		panic(err)
-	}
-
-	return &user
-}
-
-func GetDTOUser(c *gin.Context) *DTO.User {
-	var user DTO.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		panic("user bind error:" + err.Error())
 	}
 
 	return &user

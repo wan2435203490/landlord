@@ -21,7 +21,7 @@ func GetCard(id int) *Card {
 
 	card := &Card{
 		Type:   t,
-		Number: enum.CardNumber(n),
+		Number: enum.CardNumber(n + 1),
 	}
 
 	if g != 0 {

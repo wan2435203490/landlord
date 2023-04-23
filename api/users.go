@@ -1,38 +1,46 @@
 package api
 
 import (
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"landlord/biz"
-	r "landlord/common/response"
+	"landlord/pojo/DTO"
+	"landlord/sdk/api"
 )
 
-func UpdateUser(c *gin.Context) {
-	user := GetUser(c)
-	record, err := biz.GetUser(user.Id)
-	if err != nil {
-		panic(err.Error())
-	}
-	if record == nil {
-		panic("用户信息为空")
-	}
-	dtoUser := GetDTOUser(c)
-	record.UserName = dtoUser.UserName
-	record.Password = dtoUser.Password
-	record.Avatar = dtoUser.Avatar
-	record.Gender = dtoUser.Gender
-	session := sessions.Default(c)
-	session.Set("curUser", record)
-	_ = session.Save()
-	biz.UpdateUser(record)
-	r.Success(true, c)
+var UserApi userApi
+
+type userApi struct {
+	api.Api
+	biz.UserSvc
 }
 
-func Myself(c *gin.Context) {
-	user := GetUser(c)
-	if user.Id == "" {
-		r.ErrorInternal("can't find user", c)
-	} else {
-		r.Success(user, c)
+func (a *userApi) UpdateUser(c *gin.Context) {
+	var dtoUser DTO.User
+	if a.Bind(&dtoUser).Err != nil {
+		return
 	}
+
+	user := a.GetUserFromSession()
+	if user == nil {
+		return
+	}
+
+	user.UserName = dtoUser.UserName
+	user.Password = dtoUser.Password
+	user.Avatar = dtoUser.Avatar
+	user.Gender = dtoUser.Gender
+
+	a.UpdateUserBiz(user)
+	a.SetUserToSession(user)
+	a.Success(true)
+}
+
+func (a *userApi) Myself(c *gin.Context) {
+
+	user := a.GetUserFromSession()
+	if user == nil {
+		return
+	}
+
+	a.Success(user)
 }

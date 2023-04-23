@@ -1,6 +1,9 @@
 package pojo
 
-import "landlord/common/enum"
+import (
+	"encoding/json"
+	"landlord/common/enum"
+)
 
 type Card struct {
 	Id     int             `json:"id"`
@@ -10,6 +13,7 @@ type Card struct {
 }
 
 func (c *Card) CompareTo(c2 *Card) bool {
+	_, _ = json.Marshal(c2)
 	return c.Grade.CompareGrade(c2.Grade)
 }
 
@@ -22,5 +26,5 @@ func (c *Card) EqualsByGrade(c2 *Card) bool {
 }
 
 func (c *Card) Equals(c2 *Card) bool {
-	return c.Number == c2.Number
+	return c.Grade == c2.Grade && c.Type == c2.Type
 }

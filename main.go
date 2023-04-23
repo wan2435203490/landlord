@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"landlord/api/router"
 	"landlord/common/utils"
-	"landlord/core/component"
+	"landlord/internal/component"
 	"log"
 
 	swaggerFiles "github.com/swaggo/files"

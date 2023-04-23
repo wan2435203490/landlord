@@ -2,8 +2,8 @@ package biz
 
 import (
 	"landlord/common/enum"
-	"landlord/core/component"
 	"landlord/db"
+	"landlord/internal/component"
 	"landlord/pojo"
 )
 

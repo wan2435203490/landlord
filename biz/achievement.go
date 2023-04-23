@@ -2,18 +2,22 @@ package biz
 
 import (
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"landlord/common/enum"
-	"landlord/core/component"
 	"landlord/db"
 	"landlord/db/mysql_model"
+	"landlord/internal/component"
 	"landlord/pojo"
 	"landlord/pojo/DTO"
 	"landlord/pojo/ws"
+	"landlord/sdk/service"
 )
 
-func CountScore(user *db.User, result *pojo.RoundResult) {
+type AchievementSvc struct {
+	service.Service
+}
+
+func (s *AchievementSvc) CountScore(user *db.User, result *pojo.RoundResult) {
 	room := component.RC.GetUserRoom(user.Id)
 	var resList []*DTO.ResultScore
 	var messages []*ws.GameEnd
@@ -50,7 +54,7 @@ func CountScore(user *db.User, result *pojo.RoundResult) {
 		messages = append(messages, msg)
 
 		mysql_model.UpdateUser(user)
-		updateAchievement(user.Id, isWinning)
+		s.updateAchievement(user.Id, isWinning)
 	}
 
 	for i, user := range room.UserList {
@@ -60,8 +64,8 @@ func CountScore(user *db.User, result *pojo.RoundResult) {
 	}
 }
 
-func updateAchievement(userId string, isWinning bool) {
-	achievement, _ := GetAchievementByUserId(userId)
+func (s *AchievementSvc) updateAchievement(userId string, isWinning bool) {
+	achievement, _ := s.GetAchievementByUserId(userId)
 	if achievement == nil {
 		achievement = db.NewAchievement(userId)
 		_ = mysql_model.InsertAchievement(achievement)
@@ -74,31 +78,45 @@ func updateAchievement(userId string, isWinning bool) {
 	mysql_model.UpdateAchievement(achievement)
 }
 
-func GetAchievementByUserId(userId string) (*db.Achievement, error) {
-	_, err := GetUser(userId)
-
+func (s *AchievementSvc) GetAchievementByUserId(userId string) *db.Achievement {
+	err := s.Orm.Find(&db.User{}, userId).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("用户不存在")
-		} else {
-			return nil, err
+			s.ErrorMsg("用户不存在")
+			return nil
 		}
+		s.Error(err)
+		return nil
 	}
 
-	achievement, err := mysql_model.GetAchievementByUserId(userId)
+	achievement := &db.Achievement{}
+	s.Orm.Find(&achievement).Where("user_id=?", userId)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		s.Error(err)
+		return nil
+	}
+
+	//if achievement.Id == "" {
+	//	newAchievement := db.NewAchievement(userId)
+	//	err = s.Orm.Create(newAchievement).Error
+	//	if err != nil {
+	//		s.Error(err)
+	//		return nil
+	//	}
+	//	return newAchievement
+	//}
+
+	return achievement
+
+}
+
+func (s *AchievementSvc) InsertAchievement(achievement *db.Achievement) *db.Achievement {
+
+	err := s.Orm.Create(achievement).Error
 	if err != nil {
-		return nil, err
+		s.Error(err)
+		return nil
 	}
-
-	if achievement == nil {
-		newAchievement := db.NewAchievement(userId)
-		err := mysql_model.InsertAchievement(newAchievement)
-		if err != nil {
-			return nil, err
-		}
-		return newAchievement, nil
-	}
-
-	return achievement, nil
+	return achievement
 
 }

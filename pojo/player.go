@@ -32,7 +32,7 @@ func (p *Player) AddCards(cards []*Card) {
 func (p *Player) RemoveCards(cards []*Card) {
 	for _, card := range cards {
 		for j, old := range p.Cards {
-			if old == card {
+			if old.Equals(card) {
 				p.Cards = append(p.Cards[:j], p.Cards[j+1:]...)
 				break
 			}

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"landlord/biz"
 	r "landlord/common/response"
-	"landlord/core/component"
+	"landlord/internal/component"
 	"landlord/pojo/DTO"
 )
 

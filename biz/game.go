@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"landlord/common/enum"
-	"landlord/core"
-	"landlord/core/component"
 	"landlord/db"
+	"landlord/internal"
+	"landlord/internal/component"
 	"landlord/pojo"
 	"landlord/pojo/ws"
 	"log"
@@ -67,9 +67,9 @@ func Want(user *db.User, score int) {
 		//maybe game over？
 		panic("选取的地主玩家不能为空")
 	}
-	room.PrePlayTime = time.Now().Unix()
+	room.PrePlayTime = time.Now().UnixMilli()
 	component.RC.UpdateRoom(room)
-	component.NC.Send2Room(room.Id, ws.NewBid())
+	component.NC.Send2Room(room.Id, ws.NewBidEnd())
 	component.NC.Send2User(landlord.Id, ws.NewPleasePlayCard())
 	log.Printf("[%s] 玩家 %s 成为地主", room.Id, landlord.UserName)
 }
@@ -94,14 +94,14 @@ func PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
 
 	player := room.GetPlayerByUserId(user.Id)
 
-	cardType := core.GetCardsType(cardList)
+	cardType := internal.GetCardsType(cardList)
 	if cardType == -1 {
 		fmt.Printf("[%s] 玩家 %s 打出的牌不符合规则", room.Id, user.UserName)
 		panic("玩家打出的牌不符合规则")
 	}
 	if room.PreCards != nil && room.PrePlayerId != player.Id {
-		preType := core.GetCardsType(room.PreCards)
-		canPlay := core.CanPlayCards(cardList, room.PreCards, cardType, preType)
+		preType := internal.GetCardsType(room.PreCards)
+		canPlay := internal.CanPlayCards(cardList, room.PreCards, cardType, preType)
 		if !canPlay {
 			panic("该玩家出的牌管不了上家")
 		}
@@ -133,7 +133,7 @@ func PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
 		nextUser := room.GetUserByPlayerId(player.GetNextPlayerId())
 		component.NC.Send2User(nextUser.Id, ws.NewPleasePlayCard())
 	}
-	room.PrePlayTime = time.Now().Unix()
+	room.PrePlayTime = time.Now().UnixMilli()
 	component.RC.UpdateRoom(room)
 	return result
 }

@@ -21,8 +21,8 @@ func UnReady(c *gin.Context) {
 }
 
 func Bid(c *gin.Context) {
-	var bid *DTO.Bid
-	if err := c.ShouldBindJSON(bid); err != nil {
+	var bid DTO.Bid
+	if err := c.ShouldBindJSON(&bid); err != nil {
 		panic(err.Error())
 	}
 	user := GetUser(c)
@@ -41,6 +41,10 @@ func Play(c *gin.Context) {
 	validRound(user)
 	//todo
 	var cardList []*pojo.Card
+	err := c.ShouldBindJSON(&cardList)
+	if err != nil {
+		panic(err)
+	}
 	result := biz.PlayCard(user, cardList)
 	if result == nil {
 		r.Success("success", c)

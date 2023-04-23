@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+type UserDB struct {
+}
+
 func InsertUser(user *db.User) (*db.User, error) {
 
 	user.Timestamp = time.Now()
@@ -21,7 +24,7 @@ func GetUser(userId string) (*db.User, error) {
 	var user *db.User
 	err := db.DB.Mysql.DB.Table("user").Where("id=?", userId).Take(&user).Error
 
-	//err := db.DB.MySQL.DB.Find(user).Error
+	//err := db.DB.MySQL.DB.Find(user).Err
 
 	if err != nil {
 		return nil, err
@@ -40,7 +43,7 @@ func GetUserByName(userName string) (*db.User, error) {
 }
 
 func UpdateUser(user *db.User) {
-	
+
 	err := db.DB.Mysql.DB.Table("user").Updates(&user).Error
 
 	if err != nil {

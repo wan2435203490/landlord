@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm/logger"
 	"landlord/common/config"
 	"landlord/db/driver"
+	"landlord/sdk"
 	"log"
 	"time"
 )
@@ -88,6 +89,7 @@ func initMysqlDB() {
 	db.Set("gorm:table_options", "collation=utf8_unicode_ci")
 
 	DB.Mysql.DB = db
+	sdk.Runtime.SetDb("*", db)
 }
 
 func DefaultGormDB() *gorm.DB {

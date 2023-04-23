@@ -31,3 +31,16 @@ func TestFor(t *testing.T) {
 		fmt.Println(i, &i2)
 	}
 }
+
+func TestPlayerId(t *testing.T) {
+	room := &Room{}
+	room.PlayerList = []*Player{
+		{Id: 1},
+		{Id: 2},
+		{Id: 3},
+	}
+
+	id := room.GetAvailablePlayerId()
+
+	fmt.Println(id)
+}

@@ -1,79 +1,59 @@
 package api
 
 import (
-	"encoding/json"
-	"errors"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"landlord/biz"
 	"landlord/common/response"
 	"landlord/common/token"
 	"landlord/db"
 	"landlord/pojo/DTO"
+	"landlord/sdk/api"
 	"net/http"
 )
 
-func Login(c *gin.Context) {
-	var login DTO.Login
-	if err := c.ShouldBindJSON(&login); err != nil {
-		//todo
-		//log.NewError("0", utils.GetSelfFuncName(), err.Error())
-		r.ErrorInternal(err.Error(), c)
-		return
-	}
+var AuthApi authApi
 
-	user, err := biz.GetUserByName(login.UserName)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			//第一次进来 用户为空 自动插入
-			newUser := db.NewUser(login.UserName, login.Password)
-			user, err = biz.InsertUser(newUser)
-			if err != nil {
-				r.ErrorInternal(err.Error(), c)
-				return
-			}
-		} else {
-			r.ErrorInternal(err.Error(), c)
-			return
-		}
-	} else if user.Password != login.Password {
-		r.ErrorInternal("账号或密码错误", c)
-		return
-	}
-
-	token := saveSession(c, user)
-
-	r.Success(token, c)
-
+type authApi struct {
+	api.Api
+	biz.UserSvc
 }
 
-func QQLogin(c *gin.Context) {
+func (a authApi) Login(c *gin.Context) {
+	var login DTO.Login
+	if a.Bind(&login).Err != nil {
+		return
+	}
+
+	user := &db.User{UserName: login.UserName, Password: login.Password}
+	if !a.GetOrInsertUser(user) {
+		return
+	}
+
+	if user.Password != login.Password {
+		a.ErrorMsg("账号或密码错误")
+		return
+	}
+
+	a.SetUserToSession(user)
+	tokenStr, err := token.CreateToken(user.Id)
+	if err != nil {
+		a.ErrorMsg("token创建失败:" + err.Error())
+		return
+	}
+
+	a.Success(tokenStr)
+}
+
+func (a authApi) QQLogin(c *gin.Context) {
 	//todo
 	//https://wiki.connect.qq.com/
 }
 
 // qq登录成功回调
-func QQCallback(c *gin.Context) {
+func (a authApi) QQCallback(c *gin.Context) {
 
 }
 
-func PermissionDenied(c *gin.Context) {
+func (a authApi) PermissionDenied(c *gin.Context) {
 	r.Error(http.StatusUnauthorized, "请先登录", c)
-}
-
-// 保存用户登录对象到 Session，并返回客户端Token令牌
-func saveSession(c *gin.Context, user *db.User) string {
-	session := sessions.Default(c)
-	userJson, err := json.Marshal(&user)
-	if err != nil {
-		panic(err.Error())
-	}
-	session.Set("curUser", userJson)
-	_ = session.Save()
-	createToken, err := token.CreateToken(user.Id)
-	if err != nil {
-		panic(err)
-	}
-	return createToken
 }
