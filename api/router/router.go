@@ -2,89 +2,75 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"landlord/api"
-	"landlord/sdk"
+	. "landlord/api"
+	. "landlord/middleware"
 )
-
-// WithContextDb middleware todo 统一优化
-func WithContextDb(c *gin.Context) {
-	c.Set("db", sdk.Runtime.GetDbByKey(c.Request.Host).WithContext(c))
-	c.Next()
-}
-
-// WithUserApi users
-func WithUserApi(c *gin.Context) {
-	api.UserApi.MakeContext(c)
-	c.Next()
-}
-func WithAuthApi(c *gin.Context) {
-	api.AuthApi.MakeContext(c)
-	c.Next()
-}
-func WithAchievementApi(c *gin.Context) {
-	api.AuthApi.MakeContext(c)
-	c.Next()
-}
 
 func InitRouter(engine *gin.Engine) {
 
-	engine.Use(WithContextDb)
+	engine.Use(WithSession, WithContextDb)
 
-	//todo auth放到group
-	engine.Use(WithAuthApi)
-	engine.POST("/login", api.AuthApi.Login)
-	engine.GET("/qqLogin", api.AuthApi.QQLogin)
-	engine.GET("/qqLogin/qqCallback", api.AuthApi.QQCallback)
-	engine.GET("/401", api.AuthApi.PermissionDenied)
-
-	g1 := engine.Group("/users")
+	auth := engine.Group("/auth")
 	{
-		g1.Use(WithUserApi)
-		g1.GET("/myself", api.UserApi.Myself)
-		g1.PUT("", api.UserApi.UpdateUser)
+		auth.Use(WithAuthApi)
+		auth.POST("/login", AuthApi.Login)
+		auth.GET("/qqLogin", AuthApi.QQLogin)
+		auth.GET("/qqLogin/qqCallback", AuthApi.QQCallback)
+		auth.GET("/401", AuthApi.PermissionDenied)
+	}
+
+	users := engine.Group("/users")
+	{
+		users.Use(WithUserApi)
+		users.GET("/myself", UserApi.Myself)
+		users.PUT("", UserApi.Update)
 	}
 
 	achievement := engine.Group("/achievement")
 	{
-		g1.Use(WithAchievementApi)
-		achievement.GET("/:userId", api.AchievementApi.GetAchievementByUserId)
-		achievement.GET("", api.AchievementApi.GetAchievementByUserId)
+		achievement.Use(WithAchievementApi)
+		achievement.GET("/:userId", AchievementApi.GetAchievementByUserId)
+		achievement.GET("", AchievementApi.GetAchievementByUserId)
 	}
 
 	chat := engine.Group("/chat")
 	{
-		chat.POST("", api.Chat)
+		chat.Use(WithChatApi)
+		chat.POST("", ChatApi.Chat)
 	}
 
-	games := engine.Group("/games")
+	game := engine.Group("/games")
 	{
-		games.POST("/ready", api.ReadyGame)
-		games.POST("/unReady", api.UnReady)
-		games.POST("/bid", api.Bid)
-		games.POST("/play", api.Play)
-		games.POST("/pass", api.GamesPass)
+		game.Use(WithGameApi)
+		game.POST("/ready", GameApi.Ready)
+		game.POST("/unReady", GameApi.UnReady)
+		game.POST("/bid", GameApi.Bid)
+		game.POST("/play", GameApi.Play)
+		game.POST("/pass", GameApi.Pass)
 	}
 
 	player := engine.Group("/player")
 	{
-		player.GET("/cards", api.Cards)
-		player.GET("/round", api.Round)
-		player.GET("/ready", api.PlayerReady)
-		player.GET("/pass", api.PlayerPass)
-		player.GET("/bidding", api.Bidding)
+		player.Use(WithPlayerApi)
+		player.GET("/cards", PlayerApi.Cards)
+		player.GET("/round", PlayerApi.Round)
+		player.GET("/ready", PlayerApi.PlayerReady)
+		player.GET("/pass", PlayerApi.PlayerPass)
+		player.GET("/bidding", PlayerApi.Bidding)
 	}
 
-	rooms := engine.Group("/rooms")
+	room := engine.Group("/room")
 	{
-		rooms.GET("", api.Rooms)
-		rooms.GET("/:id", api.GetRoomById)
-		rooms.POST("", api.CreateRoom)
-		rooms.POST("/join", api.Join)
-		rooms.POST("/exit", api.Exit)
+		room.Use(WithRoomApi)
+		room.GET("", RoomApi.Rooms)
+		room.GET("/:id", RoomApi.GetById)
+		room.POST("", RoomApi.Create)
+		room.POST("/join", RoomApi.Join)
+		room.POST("/exit", RoomApi.Exit)
 	}
 
 	test := engine.Group("/test")
 	{
-		test.Any("/ws-test.html", api.Test)
+		test.Any("/ws-test.html", Test)
 	}
 }

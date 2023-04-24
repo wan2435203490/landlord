@@ -1,4 +1,4 @@
-package biz
+package svc
 
 import (
 	"encoding/json"
@@ -9,12 +9,17 @@ import (
 	"landlord/internal/component"
 	"landlord/pojo"
 	"landlord/pojo/ws"
+	"landlord/sdk/service"
 	"log"
 	"math/rand"
 	"time"
 )
 
-func ReadyGame(user *db.User) bool {
+type GameSvc struct {
+	service.Service
+}
+
+func (s *GameSvc) ReadyGame(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	player := room.GetPlayerByUserId(user.Id)
 	player.Ready = true
@@ -28,22 +33,23 @@ func ReadyGame(user *db.User) bool {
 	if isAllReady {
 		room.Mu.Lock()
 		defer room.Mu.Unlock()
-		StartGame(room)
+		s.StartGame(room)
 	}
 
 	return isAllReady
 }
 
-func UnReadyGame(user *db.User) {
+func (s *GameSvc) UnReadyGame(user *db.User) string {
 	room := component.RC.GetUserRoom(user.Id)
 	player := room.GetPlayerByUserId(user.Id)
 	player.Ready = false
 
 	component.RC.UpdateRoom(room)
 	component.NC.Send2Room(room.Id, ws.NewUnReadyGame(user.Id))
+	return "success"
 }
 
-func Want(user *db.User, score int) {
+func (s *GameSvc) Want(user *db.User, score int) {
 	room := component.RC.GetUserRoom(user.Id)
 	log.Printf("[%s] 玩家 %s 叫牌，分数为 %d 分\n", room.Id, user.UserName, score)
 
@@ -74,7 +80,7 @@ func Want(user *db.User, score int) {
 	log.Printf("[%s] 玩家 %s 成为地主", room.Id, landlord.UserName)
 }
 
-func NoWant(user *db.User) {
+func (s *GameSvc) NoWant(user *db.User) {
 	room := component.RC.GetUserRoom(user.Id)
 	room.IncrBiddingPlayer()
 
@@ -87,7 +93,7 @@ func NoWant(user *db.User) {
 	component.NC.Send2User(nextUser.Id, ws.NewBid())
 }
 
-func PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
+func (s *GameSvc) PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
 	room := component.RC.GetUserRoom(user.Id)
 	marshal, _ := json.Marshal(cardList)
 	fmt.Printf("[%s] 玩家 %s 出牌: %s", room.Id, user.UserName, string(marshal))
@@ -138,7 +144,7 @@ func PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
 	return result
 }
 
-func Pass(user *db.User) {
+func (s *GameSvc) PassGame(user *db.User) {
 	room := component.RC.GetUserRoom(user.Id)
 	player := room.GetPlayerByUserId(user.Id)
 	removeNextPlayerRecentCards(room, player)
@@ -152,7 +158,7 @@ func Pass(user *db.User) {
 	component.NC.Send2Room(room.Id, ws.NewPass(user))
 }
 
-func StartGame(room *pojo.Room) {
+func (s *GameSvc) StartGame(room *pojo.Room) {
 	if room.RoomStatus == enum.Playing {
 		panic("房间游戏已经开始")
 	} else {

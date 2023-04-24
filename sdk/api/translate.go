@@ -9,6 +9,8 @@ package api
 
 import (
 	"fmt"
+	"landlord/core/tools/language"
+	"landlord/sdk/pkg"
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/en"
@@ -18,6 +20,19 @@ import (
 	enTranslations "github.com/go-playground/validator/v10/translations/en"
 	chTranslations "github.com/go-playground/validator/v10/translations/zh"
 )
+
+func (a *Api) Translate(form, to interface{}) {
+	pkg.Translate(form, to)
+}
+
+// getAcceptLanguage 获取当前语言
+func (a *Api) getAcceptLanguage() string {
+	languages := language.ParseAcceptLanguage(a.Context.GetHeader("Accept-Language"), nil)
+	if len(languages) == 0 {
+		return DefaultLanguage
+	}
+	return languages[0]
+}
 
 // transInit local 通常取决于 http 请求头的 'Accept-Language'
 func transInit(local string) (trans ut.Translator, err error) {

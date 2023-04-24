@@ -2,45 +2,38 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"landlord/biz"
 	"landlord/pojo/DTO"
 	"landlord/sdk/api"
+	"landlord/svc"
 )
 
 var UserApi userApi
 
 type userApi struct {
 	api.Api
-	biz.UserSvc
+	svc.UserSvc
 }
 
-func (a *userApi) UpdateUser(c *gin.Context) {
+func (a *userApi) Update(c *gin.Context) {
 	var dtoUser DTO.User
 	if a.Bind(&dtoUser).Err != nil {
 		return
 	}
-
-	user := a.GetUserFromSession()
-	if user == nil {
-		return
-	}
+	user := a.User()
 
 	user.UserName = dtoUser.UserName
 	user.Password = dtoUser.Password
 	user.Avatar = dtoUser.Avatar
 	user.Gender = dtoUser.Gender
 
-	a.UpdateUserBiz(user)
-	a.SetUserToSession(user)
-	a.Success(true)
+	if a.UpdateUser(user) != nil {
+		return
+	}
+	a.SetUser(user)
+	a.OK(true)
 }
 
 func (a *userApi) Myself(c *gin.Context) {
-
-	user := a.GetUserFromSession()
-	if user == nil {
-		return
-	}
-
-	a.Success(user)
+	user := a.User()
+	a.OK(user)
 }

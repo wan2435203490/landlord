@@ -1,4 +1,4 @@
-package biz
+package svc
 
 import (
 	"landlord/common/config"
@@ -8,46 +8,36 @@ import (
 	"landlord/pojo"
 	"landlord/pojo/DTO"
 	"landlord/pojo/ws"
+	"landlord/sdk/service"
 	"time"
 )
 
-var RoomBiz Room
-
-type Room struct {
+type RoomSvc struct {
+	service.Service
 }
 
-//func (r *Room) Func(args ...any) {
-//	//todo
-//	//method := args[0]
-//	r.ExitRoom(args[0].(*db.User))
-//}
-//
-//func init() {
-//	component.Register(RoomBiz)
-//}
-
-func GetRoomByUser(user *db.User) *pojo.Room {
+func (s *RoomSvc) GetRoomByUser(user *db.User) *pojo.Room {
 	return component.RC.GetUserRoom(user.Id)
 }
 
-func GetRoomOut(user *db.User, roomId string) *DTO.RoomOut {
+func (s *RoomSvc) GetRoomOut(user *db.User, roomId string) *DTO.RoomOut {
 	room := component.RC.GetRoom(roomId)
-	if !canVisit(user, room) {
+	if !s.canVisit(user, room) {
 		panic("你无权查看本房间的信息")
 	}
 	result := DTO.ToRoomOut(room)
 	for _, player := range result.PlayerList {
 		player.Online = component.WS.IsOnline(player.User.Id)
 	}
-	setCountDown(room, result)
+	s.setCountDown(room, result)
 	return result
 }
 
-func CreateRoom(user *db.User, title, password string) *pojo.Room {
+func (s *RoomSvc) CreateRoom(user *db.User, title, password string) *pojo.Room {
 	return component.RC.CreateRoom(user, title, password)
 }
 
-func JoinRoom(user *db.User, dtoRoom *DTO.Room) string {
+func (s *RoomSvc) JoinRoom(user *db.User, dtoRoom *DTO.Room) string {
 	dtoRoomId := dtoRoom.Id
 	room := component.RC.GetRoom(dtoRoomId)
 	if room.RoomStatus == enum.Playing {
@@ -59,7 +49,7 @@ func JoinRoom(user *db.User, dtoRoom *DTO.Room) string {
 	return msg
 }
 
-func setCountDown(room *pojo.Room, result *DTO.RoomOut) {
+func (s *RoomSvc) setCountDown(room *pojo.Room, result *DTO.RoomOut) {
 	if room.PrePlayTime == 0 {
 		result.CountDown = -1
 		return
@@ -73,7 +63,7 @@ func setCountDown(room *pojo.Room, result *DTO.RoomOut) {
 	}
 }
 
-func canVisit(user *db.User, room *pojo.Room) bool {
+func (s *RoomSvc) canVisit(user *db.User, room *pojo.Room) bool {
 	for _, u := range room.UserList {
 		if u.Id == user.Id {
 			return true
@@ -82,7 +72,7 @@ func canVisit(user *db.User, room *pojo.Room) bool {
 	return false
 }
 
-func ExitRoom(user *db.User) bool {
+func (s *RoomSvc) ExitRoom(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	dissolved := component.RC.ExitRoom(room.Id, user)
 	if !dissolved {

@@ -18,16 +18,26 @@ func EmptyGameEnd() *GameEnd {
 	return v
 }
 
-func NewGameEnd(winningIdentity enum.Identity, isWinning bool,
-	resList []*DTO.ResultScore) *GameEnd {
+func NewGameEnd(winningIdentity enum.Identity, isWinning bool) *GameEnd {
 	v := &GameEnd{
 		WinningIdentity: winningIdentity,
 		IsWinning:       isWinning,
-		ResList:         resList,
 	}
 	v.Type = v.GetMessageType()
 	return v
 }
+
+//
+//func NewGameEnd(winningIdentity enum.Identity, isWinning bool,
+//	resList []*DTO.ResultScore) *GameEnd {
+//	v := &GameEnd{
+//		WinningIdentity: winningIdentity,
+//		IsWinning:       isWinning,
+//		ResList:         resList,
+//	}
+//	v.Type = v.GetMessageType()
+//	return v
+//}
 
 func (g *GameEnd) GetMessageType() string {
 	return enum.GameEnd.GetWsMessageType()

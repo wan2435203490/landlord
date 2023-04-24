@@ -18,6 +18,8 @@ import (
 
 var DB DataBases
 
+var MySQL *gorm.DB
+
 type DataBases struct {
 	Mysql       driver.MySqlDB
 	mgoSession  *mgo.Session
@@ -89,6 +91,7 @@ func initMysqlDB() {
 	db.Set("gorm:table_options", "collation=utf8_unicode_ci")
 
 	DB.Mysql.DB = db
+	MySQL = db
 	sdk.Runtime.SetDb("*", db)
 }
 

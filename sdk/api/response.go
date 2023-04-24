@@ -1,7 +1,6 @@
-package r
+package api
 
 import (
-	"github.com/gin-gonic/gin"
 	"landlord/common/utils"
 	"net/http"
 )
@@ -22,25 +21,25 @@ type response struct {
 	Data any `json:"data"`
 }
 
-func Success(data any, c *gin.Context) {
+func (a *Api) OK(data any) {
 	res := &response{}
 	res.Message = http.StatusText(http.StatusOK)
 	res.Status = SuccessStatus
 	res.Code = http.StatusOK
 	res.Data = data
 
-	c.JSON(http.StatusOK, res)
+	a.Context.JSON(http.StatusOK, res)
 }
 
-func Error(httpStatus int, msg string, c *gin.Context) {
+func (a *Api) Error(httpStatus int, msg string) {
 	res := &response{}
 	res.Message = utils.IfThen(len(msg) > 0, msg, http.StatusText(httpStatus)).(string)
 	res.Status = ErrorStatus
 	res.Code = httpStatus
 
-	c.JSON(httpStatus, res)
+	a.Context.JSON(httpStatus, res)
 }
 
-func ErrorInternal(msg string, c *gin.Context) {
-	Error(http.StatusInternalServerError, msg, c)
+func (a *Api) ErrorInternal(msg string) {
+	a.Error(http.StatusInternalServerError, msg)
 }

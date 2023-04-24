@@ -1,39 +1,19 @@
 package api
 
 import (
-	json2 "encoding/json"
 	"github.com/gin-contrib/sessions"
 	"landlord/db"
+	"landlord/middleware"
 )
 
-func (a *Api) DefaultSession() sessions.Session {
-	return sessions.Default(a.Context)
+func (a *Api) User() *db.User {
+	value, _ := a.Context.Get(middleware.UserSessionKey)
+	return value.(*db.User)
 }
 
-func (a *Api) GetUserFromSession() *db.User {
-	session := a.DefaultSession()
-	get := session.Get(UserSessionKey)
-	if get == nil {
-		a.ErrorMsg("session记录被清除，请退出重新登录。")
-		return nil
-	}
-	var user db.User
-	err := json2.Unmarshal(get.([]byte), &user)
-	if err != nil {
-		a.Error(err)
-		return nil
-	}
-
-	if &user == nil || user.Id == "" {
-		a.ErrorMsg("session记录被清除，请退出重新登录。")
-		return nil
-	}
-
-	return &user
-}
-
-func (a *Api) SetUserToSession(user *db.User) {
-	session := a.DefaultSession()
-	session.Set(UserSessionKey, user)
+// SetUser todo 根据type反射set any type
+func (a *Api) SetUser(user *db.User) {
+	session := sessions.Default(a.Context)
+	session.Set(middleware.UserSessionKey, user)
 	_ = session.Save()
 }

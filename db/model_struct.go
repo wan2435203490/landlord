@@ -25,14 +25,14 @@ func (*Achievement) TableName() string {
 	return "achievement"
 }
 
-func (a *Achievement) IncrWinMatch() {
-	a.WinMatch++
-	a.Sum++
-}
-
-func (a *Achievement) IncrFailureMatch() {
-	a.FailureMatch++
-	a.Sum++
+func (a *Achievement) CalculateScore(isWin bool) {
+	if isWin {
+		a.WinMatch++
+		a.Sum++
+	} else {
+		a.FailureMatch++
+		a.Sum++
+	}
 }
 
 type User struct {

@@ -1,17 +1,22 @@
-package biz
+package svc
 
 import (
 	"landlord/common/enum"
 	"landlord/db"
 	"landlord/internal/component"
 	"landlord/pojo"
+	"landlord/sdk/service"
 )
 
-func GetPlayerCards(user *db.User) []*pojo.Card {
+type PlayerSvc struct {
+	service.Service
+}
+
+func (s *PlayerSvc) GetPlayerCards(user *db.User) []*pojo.Card {
 	return component.RC.GetUserCards(user.Id)
 }
 
-func IsPlayerRound(user *db.User) bool {
+func (s *PlayerSvc) IsPlayerRound(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
 		panic("游戏还未开始")
@@ -35,7 +40,7 @@ func IsPlayerRound(user *db.User) bool {
 	return true
 }
 
-func IsPlayerReady(user *db.User) bool {
+func (s *PlayerSvc) IsPlayerReady(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus == enum.Playing {
 		panic("游戏已经开始")
@@ -44,7 +49,7 @@ func IsPlayerReady(user *db.User) bool {
 	return player.Ready
 }
 
-func CanPass(user *db.User) bool {
+func (s *PlayerSvc) CanPass(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
 		panic("游戏还未开始")
@@ -56,7 +61,7 @@ func CanPass(user *db.User) bool {
 	return room.PrePlayerId != player.Id
 }
 
-func CanBid(user *db.User) bool {
+func (s *PlayerSvc) CanBid(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
 		panic("游戏还未开始")

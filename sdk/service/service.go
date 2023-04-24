@@ -1,43 +1,37 @@
 package service
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	r "landlord/common/response"
-	"landlord/core/logger"
+	"landlord/sdk/api"
 )
 
 type IService interface {
+	// Get 定义增删改查接口？
 	Get() *Service
 }
 
 type Service struct {
-	Context *gin.Context
-	Orm     *gorm.DB
-	Msg     string
-	MsgID   string
-	Log     *logger.Helper
-	Err     error
+	//Orm *gorm.DB
+	Api *api.Api
 }
 
 func (s *Service) Get() *Service {
 	return s
 }
 
-func (s *Service) AddError(err error) error {
-	if s.Err == nil {
-		s.Err = err
-	} else if err != nil {
-		s.Err = fmt.Errorf("%v; %w", s.Err, err)
-	}
-	return s.Err
+// AddError 报错即返回
+func (s *Service) AddError(err error) {
+	s.Api.AddError(err)
 }
 
-func (s *Service) Error(err error) {
-	r.ErrorInternal(err.Error(), s.Context)
+// AddError 报错即返回
+func (s *Service) IfError(err error) error {
+	return s.Api.IfError(err)
 }
 
-func (s *Service) ErrorMsg(msg string) {
-	r.ErrorInternal(msg, s.Context)
-}
+//func (s *Service) Error(err error) {
+//	r.ErrorInternal(err.Error(), s.Context)
+//}
+//
+//func (s *Service) ErrorMsg(msg string) {
+//	r.ErrorInternal(msg, s.Context)
+//}

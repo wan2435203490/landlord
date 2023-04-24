@@ -2,6 +2,7 @@ package DTO
 
 import (
 	"landlord/common/enum"
+	"landlord/common/utils"
 	"strconv"
 )
 
@@ -11,7 +12,31 @@ type ResultScore struct {
 	IdentityName string `json:"identityName"`
 }
 
-func NewResultScore(userName string, moneyChange int, identity enum.Identity) *ResultScore {
-	return &ResultScore{UserName: userName, MoneyChange: strconv.Itoa(moneyChange),
-		IdentityName: identity.GetIdentity()}
+func NewResultScore(userName string, multiple int, isWin, isLandlord bool) *ResultScore {
+	if isLandlord {
+		return NewLandlordScore(userName, multiple, isWin)
+	} else {
+		return NewFarmerScore(userName, multiple, isWin)
+	}
+}
+
+func NewFarmerScore(userName string, multiple int, isWin bool) *ResultScore {
+	return &ResultScore{
+		UserName:     userName,
+		MoneyChange:  GetMoneyChange(multiple, isWin),
+		IdentityName: enum.Farmer.GetIdentity(),
+	}
+}
+
+func NewLandlordScore(userName string, multiple int, isWin bool) *ResultScore {
+	return &ResultScore{
+		UserName:     userName,
+		MoneyChange:  GetMoneyChange(multiple*2, isWin),
+		IdentityName: enum.Landlord.GetIdentity(),
+	}
+}
+
+func GetMoneyChange(moneyChange int, isWin bool) string {
+	moneyChange = utils.IfThen(isWin, moneyChange, -moneyChange).(int)
+	return strconv.Itoa(moneyChange)
 }

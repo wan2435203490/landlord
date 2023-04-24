@@ -10,7 +10,7 @@ func (a *Api) Param(key string) string {
 
 	value := a.Context.Param(key)
 	if value == "" {
-		a.ErrorMsg(key + " is empty")
+		a.ErrorInternal(key + " is empty")
 	}
 	return value
 }
@@ -31,7 +31,7 @@ func (a *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 			err = a.Context.ShouldBindWith(d, bindings[i])
 		}
 		if err != nil && err.Error() == "EOF" {
-			a.Logger.Warn("request body is not present anymore. ")
+			//a.Logger.Warn("request body is not present anymore. ")
 			err = nil
 			continue
 		}
@@ -40,12 +40,14 @@ func (a *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 			break
 		}
 	}
-	//vd.SetErrorFactory(func(failPath, msg string) error {
-	//	return fmt.Errorf(`"validation failed: %s %s"`, failPath, msg)
-	//})
+
 	if err1 := vd.Validate(d); err1 != nil {
 		a.AddError(err1)
 	}
-	a.ErrorIfExists()
+
+	if a.Err != nil {
+		a.ErrorInternal(a.Err.Error())
+	}
+
 	return a
 }

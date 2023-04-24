@@ -85,7 +85,7 @@ func (uc *UserConn) Ping(ticker *time.Ticker) {
 			uc.IsOnline = false
 			//todo
 			Push("ExitRoom", &db.User{Id: uc.UserId})
-			//biz.ExitRoom(&db.User{Id: uc.UserId})
+			//svc.ExitRoom(&db.User{Id: uc.UserId})
 			uc.mu.Unlock()
 			break
 		} else {
