@@ -36,7 +36,7 @@ func TestIsAircraftWithSingleWing(t *testing.T) {
 	// 333444555666 7777
 
 	var cards []*pojo.Card
-	arr0 := []int{3, 3, 4, 4, 4, 5, 6, 3}
+	arr0 := []int{3, 3, 4, 4, 4, 5, 6, 3, 2, 2, 2, 1}
 	arr1 := []int{3, 3, 4, 4, 5, 4, 5, 3}
 	arr2 := []int{3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 7}
 	arr3 := []int{3, 3, 3, 4, 4, 4, 5, 5, 5, 9, 9, 9}
@@ -46,37 +46,43 @@ func TestIsAircraftWithSingleWing(t *testing.T) {
 	for _, i := range arr0 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr0:", IsAircraftWithSingleWing(cards))
+	b, _ := IsAircraftWithSingleWing(cards)
+	fmt.Println("arr0:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr1 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr1:", IsAircraftWithSingleWing(cards))
+	b, _ = IsAircraftWithSingleWing(cards)
+	fmt.Println("arr1:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr2 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr2:", IsAircraftWithSingleWing(cards))
+	b, _ = IsAircraftWithSingleWing(cards)
+	fmt.Println("arr2:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr3 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr3:", IsAircraftWithSingleWing(cards))
+	b, _ = IsAircraftWithSingleWing(cards)
+	fmt.Println("arr3:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr4 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr4:", IsAircraftWithSingleWing(cards))
+	b, _ = IsAircraftWithSingleWing(cards)
+	fmt.Println("arr4:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr5 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr5:", IsAircraftWithSingleWing(cards))
+	b, _ = IsAircraftWithSingleWing(cards)
+	fmt.Println("arr5:", b)
 
 }
 
@@ -97,36 +103,41 @@ func TestIsAircraftWithPairWing(t *testing.T) {
 	for _, i := range arr0 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr0:", IsAircraftWithPairWing(cards))
+	b, _ := IsAircraftWithPairWing(cards)
+	fmt.Println("arr0:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr1 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr1:", IsAircraftWithPairWing(cards))
+	b, _ = IsAircraftWithPairWing(cards)
+	fmt.Println("arr1:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr2 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr2:", IsAircraftWithPairWing(cards))
+	b, _ = IsAircraftWithPairWing(cards)
+	fmt.Println("arr2:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr3 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr3:", IsAircraftWithPairWing(cards))
+	b, _ = IsAircraftWithPairWing(cards)
+	fmt.Println("arr3:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr4 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr4:", IsAircraftWithPairWing(cards))
+	b, _ = IsAircraftWithPairWing(cards)
+	fmt.Println("arr4:", b)
 
 	cards = make([]*pojo.Card, 0)
 	for _, i := range arr5 {
 		cards = append(cards, &pojo.Card{Grade: enum.CardGrade(i)})
 	}
-	fmt.Println("arr5:", IsAircraftWithPairWing(cards))
+	fmt.Println("arr5:", b)
 
 }

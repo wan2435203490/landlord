@@ -17,25 +17,25 @@ type RoomComponent struct {
 	//用户玩家当前所在的房间号映射Map <userId, roomId>
 	UserRoomMap sync.Map
 	//房间号和与该房间所对应的Room对象映射Map <roomId, room>
+	//todo 改成db
 	RoomMap sync.Map
 }
 
 // CreateRoom 创建房间
-func (rc *RoomComponent) CreateRoom(user *db.User, title, roomPassword string) *pojo.Room {
+func (rc *RoomComponent) CreateRoom(user *db.User, title, roomPassword string) (*pojo.Room, string) {
 	rid := rc.getUserRoomId(user.Id)
 	if rid != "" {
-		sprintf := fmt.Sprintf("用户已在房间号为 %s 的房间", rid)
-		panic(sprintf)
+		return nil, fmt.Sprintf("用户已在房间号为 %s 的房间", rid)
 	}
 
 	roomId := rc.randRoomId()
 	room := &pojo.Room{
 		Id:              roomId,
 		RoomStatus:      enum.Preparing,
-		Multiple:        1,
+		Multiple:        0,
 		PrePlayerId:     0,
-		StepNum:         -1,
-		BiddingPlayerId: -1,
+		StepNum:         0,
+		BiddingPlayerId: 0,
 		Title:           title,
 		Owner:           user,
 	}
@@ -55,27 +55,27 @@ func (rc *RoomComponent) CreateRoom(user *db.User, title, roomPassword string) *
 
 	rc.RoomMap.Store(roomId, room)
 	rc.setUserRoom(user.Id, roomId)
-	return room
+	return room, ""
 }
 
 // JoinRoom 加入房间
 func (rc *RoomComponent) JoinRoom(roomId, roomPassword string, user *db.User) string {
 	rId := rc.getUserRoomId(user.Id)
 	if rId != "" {
-		panic(fmt.Sprintf("用户已在房间号为 %s 的房间", rId))
+		return fmt.Sprintf("用户已在房间号为 %s 的房间", rId)
 	}
 	if room, ok := rc.RoomMap.Load(roomId); !ok {
-		panic("该房间不存在，请核实您输入的房间号！")
+		return "该房间不存在，请核实您输入的房间号！"
 	} else {
 		r := room.(*pojo.Room)
 		if r.ContainsUser(user) {
-			panic("您已经加入此房间，无法重复加入！")
+			return "您已经加入此房间，无法重复加入！"
 		}
 		if r.IsFull() {
-			panic("该房间已满，请寻找其他房间！")
+			return "该房间已满，请寻找其他房间！"
 		}
 		if !r.CheckPassword(roomPassword) {
-			panic("对不起，您输入的房间密码有误！")
+			return "对不起，您输入的房间密码有误！"
 		}
 
 		//playerId(座位序号) 可能是1 2 3 这里取不存在的player最小id，以后实现选座位
@@ -86,7 +86,7 @@ func (rc *RoomComponent) JoinRoom(roomId, roomPassword string, user *db.User) st
 
 		rc.setUserRoom(user.Id, roomId)
 
-		return "加入成功!"
+		return ""
 	}
 }
 
@@ -94,9 +94,8 @@ func (rc *RoomComponent) JoinRoom(roomId, roomPassword string, user *db.User) st
 func (rc *RoomComponent) ExitRoom(roomId string, user *db.User) bool {
 	rc.UserRoomMap.Delete(user.Id)
 
-	if value, ok := rc.RoomMap.Load(roomId); !ok {
-		panic("该房间不存在")
-	} else {
+	if value, ok := rc.RoomMap.Load(roomId); ok {
+
 		room := value.(*pojo.Room)
 		room.RemoveUser(user.Id)
 		room.RemovePlayer(user.Id)
@@ -124,29 +123,30 @@ func (rc *RoomComponent) ListRooms() []*pojo.Room {
 	return ret
 }
 
-func (rc *RoomComponent) GetRoom(roomId string) *pojo.Room {
+func (rc *RoomComponent) GetRoom(roomId string) (*pojo.Room, string) {
 	if room, ok := rc.RoomMap.Load(roomId); !ok {
-		panic("该房间不存在，请核实您输入的房间号！")
+		return nil, "该房间不存在，请核实您输入的房间号！"
 	} else {
-		return room.(*pojo.Room)
+		return room.(*pojo.Room), ""
 	}
 }
 
-func (rc *RoomComponent) UpdateRoom(new *pojo.Room) {
+func (rc *RoomComponent) UpdateRoom(new *pojo.Room) string {
 	if _, ok := rc.RoomMap.Load(new.Id); !ok {
-		panic("该房间不存在！")
+		return "该房间不存在！"
 	} else {
 		rc.RoomMap.Store(new.Id, new)
 	}
+	return ""
 }
 
-func (rc *RoomComponent) GetUserCards(userId string) []*pojo.Card {
+func (rc *RoomComponent) GetUserCards(userId string) ([]*pojo.Card, string) {
 	room := rc.GetUserRoom(userId)
 	player := room.GetPlayerByUserId(userId)
 	if player == nil {
-		panic("未找到该玩家！")
+		return nil, "未找到该玩家！"
 	}
-	return player.Cards
+	return player.Cards, ""
 }
 
 // GetUserRoom 获取当前用户所在的房间对象
@@ -155,6 +155,7 @@ func (rc *RoomComponent) GetUserRoom(userId string) *pojo.Room {
 		if room, ok := rc.RoomMap.Load(roomId); ok {
 			return room.(*pojo.Room)
 		} else {
+			//todo
 			panic(fmt.Sprintf("未找到对应房间:%s", roomId))
 		}
 	} else {

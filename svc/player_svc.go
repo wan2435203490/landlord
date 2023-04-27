@@ -12,38 +12,35 @@ type PlayerSvc struct {
 	service.Service
 }
 
-func (s *PlayerSvc) GetPlayerCards(user *db.User) []*pojo.Card {
+func (s *PlayerSvc) GetPlayerCards(user *db.User) ([]*pojo.Card, string) {
 	return component.RC.GetUserCards(user.Id)
 }
 
 func (s *PlayerSvc) IsPlayerRound(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
-		panic("游戏还未开始")
+		//todo 处理错误时的情况
+		return false
 	}
-	if room.StepNum == -1 {
+	if room.StepNum == 0 {
 		//叫牌未结束
 		return false
 	}
 	player := room.GetPlayerByUserId(user.Id)
 	remain := room.StepNum % 3
 	if remain == 0 {
-		if player.Id != 3 {
-			return false
-		}
-	} else {
-		if player.Id != remain {
-			return false
-		}
+		remain = 3
 	}
 
-	return true
+	return player.Id == remain
 }
 
 func (s *PlayerSvc) IsPlayerReady(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus == enum.Playing {
-		panic("游戏已经开始")
+		//游戏已经开始
+		//todo 处理错误时的情况
+		return false
 	}
 	player := room.GetPlayerByUserId(user.Id)
 	return player.Ready
@@ -52,7 +49,8 @@ func (s *PlayerSvc) IsPlayerReady(user *db.User) bool {
 func (s *PlayerSvc) CanPass(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
-		panic("游戏还未开始")
+		//todo 处理错误时的情况
+		return false
 	}
 	player := room.GetPlayerByUserId(user.Id)
 	if room.PrePlayerId == 0 {
@@ -64,9 +62,10 @@ func (s *PlayerSvc) CanPass(user *db.User) bool {
 func (s *PlayerSvc) CanBid(user *db.User) bool {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
-		panic("游戏还未开始")
+		//todo 处理错误时的情况
+		return false
 	}
-	if room.StepNum != -1 {
+	if room.StepNum != 0 {
 		return false
 	}
 	player := room.GetPlayerByUserId(user.Id)

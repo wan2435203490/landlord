@@ -16,7 +16,7 @@ type userApi struct {
 
 func (a *userApi) Update(c *gin.Context) {
 	var dtoUser DTO.User
-	if a.Bind(&dtoUser).Err != nil {
+	if !a.Bind(&dtoUser) {
 		return
 	}
 	user := a.User()

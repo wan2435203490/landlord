@@ -21,7 +21,7 @@ func (s *UserSvc) InsertUser(user *db.User) error {
 
 func (s *UserSvc) GetUser(user *db.User) error {
 
-	err := db.MySQL.Find(&user, user.Id).Error
+	err := db.MySQL.Find(&user, "id=?", user.Id).Error
 
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("用户不存在")

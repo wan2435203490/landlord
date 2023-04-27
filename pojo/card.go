@@ -14,10 +14,10 @@ type Card struct {
 
 func (c *Card) CompareTo(c2 *Card) bool {
 	_, _ = json.Marshal(c2)
-	return c.Grade.CompareGrade(c2.Grade)
+	return c.Grade.GreatThanGrade(c2.Grade)
 }
 
-//func CompareGrade(i, j int) bool {
+//func GreatThanGrade(i, j int) bool {
 //	return p.Cards[i].Grade > p.Cards[j].Grade
 //}
 

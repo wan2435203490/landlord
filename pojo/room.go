@@ -2,7 +2,6 @@ package pojo
 
 import (
 	"landlord/common/enum"
-	"landlord/common/utils"
 	"landlord/db"
 	"sort"
 	"sync"
@@ -26,13 +25,13 @@ type Room struct {
 	UserList []*db.User `json:"userList"`
 	//房间状态
 	RoomStatus enum.RoomStatus `json:"roomStatus"`
-	Status     string          `json:"status"`
 
-	//底分 default 1
+	//底分 default 0
 	Multiple int `json:"multiple"`
 	//每局走的步数，用来控制玩家的出牌回合 -1代表叫牌还未结束
+	// 1 2 3
 	StepNum int `json:"stepNum"`
-	//叫牌的玩家
+	//叫牌的玩家 1 2 3
 	BiddingPlayerId int `json:"biddingPlayer"`
 	//上一回合玩家打出的牌
 	PreCards    []*Card `json:"preCards"`
@@ -40,6 +39,10 @@ type Room struct {
 	//上一回合出牌的时间戳
 	PrePlayTime  int64             `json:"prePlayTime"`
 	Distribution *CardDistribution `json:"distribution"`
+	//最后一次叫地主的PlayerId 如果三个人都没叫地主 默认这个人就是地主
+	EndBidId int
+	//最近一次叫分的PlayerId
+	LatestBidId int
 }
 
 func (r *Room) ContainsUser(user *db.User) bool {
@@ -84,12 +87,12 @@ func (r *Room) GetAvailablePlayerId() int {
 }
 
 func (r *Room) Reset() {
-	r.Multiple = 1
+	r.Multiple = 0
 	r.RoomStatus = enum.Preparing
 	r.PreCards = nil
 	r.PrePlayerId = 0
-	r.StepNum = -1
-	r.BiddingPlayerId = -1
+	r.StepNum = 0
+	r.BiddingPlayerId = 0
 	r.PrePlayTime = 0
 
 	for _, player := range r.PlayerList {
@@ -140,12 +143,6 @@ func (r *Room) RemoveUser(userId string) {
 
 func (r *Room) IncrStep() {
 	r.StepNum++
-}
-
-func (r *Room) GetCurrentPlayerId() int {
-	//应该是求余？
-	n := r.StepNum / 3
-	return utils.IfThen(n == 0, 3, n).(int)
 }
 
 func (r *Room) IncrBiddingPlayer() {

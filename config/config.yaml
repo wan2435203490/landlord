@@ -9,7 +9,7 @@ frontend-host: localhost:9000
 landlords:
   frontend-host: landlords.pushyzheng.com
   jwt-secret: 298b8610-6835-4d12-b8ae-efba3dbcccad
-  max-seconds-for-every-round: 30
+  max_seconds_for_every_round: 30
 
 database:
   driver: MySQL #SQLite MySQL

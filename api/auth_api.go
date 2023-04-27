@@ -20,7 +20,7 @@ type authApi struct {
 func (a *authApi) Login(c *gin.Context) {
 
 	var login DTO.Login
-	if a.Bind(&login).Err != nil {
+	if !a.Bind(&login) {
 		return
 	}
 

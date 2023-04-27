@@ -31,7 +31,7 @@ func CanPlayCards(cards, preCards []*pojo.Card, typ, preType enum.Type) bool {
 	case enum.FourWithFour:
 		_, i0 := IsFourWithFour(cards)
 		_, i1 := IsFourWithFour(preCards)
-		return i0.CompareGrade(i1)
+		return i0.GreatThanGrade(i1)
 	case enum.Straight:
 		fallthrough
 	case enum.StraightPair:
@@ -50,17 +50,12 @@ func CanPlayCards(cards, preCards []*pojo.Card, typ, preType enum.Type) bool {
 	case enum.AircraftWithSingleWings:
 		_, i0 := IsAircraftWithSingleWing(cards)
 		_, i1 := IsAircraftWithSingleWing(preCards)
-		return i0.CompareGrade(i1)
+		return i0.GreatThanGrade(i1)
 	case enum.AircraftWithPairWings:
 		_, i0 := IsAircraftWithPairWing(cards)
 		_, i1 := IsAircraftWithPairWing(preCards)
-		return i0.CompareGrade(i1)
+		return i0.GreatThanGrade(i1)
 	}
 
-	return false
-}
-
-// HasPlayCards 判断是否有可以出的牌
-func HasPlayCards(cards, preCards []*pojo.Card, typ, preType enum.CardType) bool {
 	return false
 }

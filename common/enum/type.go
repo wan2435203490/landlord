@@ -33,50 +33,50 @@ func (t Type) GetType() string {
 		"连对", "飞机", "飞机带翅膀", "飞机带大炮"}[t]
 }
 
-func (c *Type) UnmarshalJSON(b []byte) error {
+func (t *Type) UnmarshalJSON(b []byte) error {
 	var s string
 	if err := json.Unmarshal(b, &s); err != nil {
 		return err
 	}
 	switch strings.ToUpper(s) {
 	default:
-		*c = Single
+		*t = Single
 	case "单张":
-		*c = Single
+		*t = Single
 	case "对子":
-		*c = Pair
+		*t = Pair
 	case "三张":
-		*c = ThreeType
+		*t = ThreeType
 	case "三带一":
-		*c = ThreeWithOne
+		*t = ThreeWithOne
 	case "三带一对":
-		*c = ThreeWithPair
+		*t = ThreeWithPair
 	case "四带二":
-		*c = FourWithTwo
+		*t = FourWithTwo
 	case "四带两对":
-		*c = FourWithFour
+		*t = FourWithFour
 	case "炸弹":
-		*c = Bomb
+		*t = Bomb
 	case "王炸":
-		*c = JokerBomb
+		*t = JokerBomb
 	case "顺子":
-		*c = Straight
+		*t = Straight
 	case "连对":
-		*c = StraightPair
+		*t = StraightPair
 	case "飞机":
-		*c = Aircraft
+		*t = Aircraft
 	case "飞机带翅膀":
-		*c = AircraftWithSingleWings
+		*t = AircraftWithSingleWings
 	case "飞机带大炮":
-		*c = AircraftWithPairWings
+		*t = AircraftWithPairWings
 	}
 
 	return nil
 }
 
-func (c Type) MarshalJSON() ([]byte, error) {
+func (t Type) MarshalJSON() ([]byte, error) {
 	var s string
-	switch c {
+	switch t {
 	default:
 		s = "单张"
 	case Single:

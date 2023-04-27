@@ -7,6 +7,7 @@ import (
 )
 
 type Player struct {
+	//1,2,3
 	Id          int           `json:"id"`
 	Identity    enum.Identity `json:"identity"`
 	Cards       []*Card       `json:"cards"`

@@ -3,6 +3,7 @@ package component
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"io"
 	"landlord/common/config"
@@ -12,6 +13,7 @@ import (
 	"landlord/db"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -191,47 +193,52 @@ func (ws *wsServer) IsOnline(userId string) bool {
 	return true
 }
 
-func (ws *wsServer) Send2Users(userIds []string, content string) bool {
-	res := true
+func (ws *wsServer) Send2Users(userIds []string, content string) string {
+
+	res := strings.Builder{}
 
 	for _, id := range userIds {
-		res = res && ws.Send2User(id, content)
+		res.WriteString(ws.Send2User(id, content))
 	}
 
-	return res
+	return res.String()
 }
 
-func (ws *wsServer) Send2User(userId string, content string) bool {
+func (ws *wsServer) Send2User(userId string, content string) string {
 	if value, ok := ws.UserConnMap.Load(userId); ok {
 		conn := value.(*UserConn)
 		if !conn.IsOnline {
-			log.Printf("玩家不在线userId:%s\n", userId)
+			return fmt.Sprintf("玩家不在线userId:%s\n", userId)
 		} else {
 			log.Printf("websocket:%s\n", content)
 			err := conn.WriteMessage(websocket.TextMessage, []byte(content))
 			if err != nil {
-				log.Printf("消息推送异常userId:%s,err:%s\n", userId, err.Error())
+				return fmt.Sprintf("消息推送异常userId:%s,err:%s\n", userId, err.Error())
 			} else {
-				return true
+				return ""
 			}
 		}
 	}
 
-	return false
+	return "用户连接不存在，请重试"
 
 }
 
-func (ws *wsServer) Send2AllUser(content string) {
+func (ws *wsServer) Send2AllUser(content string) string {
+	var sb strings.Builder
 	ws.UserConnMap.Range(func(key, value any) bool {
 		conn := value.(*UserConn)
 		if !conn.IsOnline {
-			log.Println("玩家不在线")
+			sb.WriteString("玩家不在线")
 		} else {
 			err := conn.WriteMessage(websocket.TextMessage, []byte(content))
 			if err != nil {
-				log.Printf("消息推送异常userId:%s,err:%s\n", key, err.Error())
+				msg := fmt.Sprintf("消息推送异常userId:%s,err:%s\n", key, err.Error())
+				sb.WriteString(msg)
 			}
 		}
 		return true
 	})
+
+	return sb.String()
 }

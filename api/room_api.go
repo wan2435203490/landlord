@@ -35,14 +35,18 @@ func (a *roomApi) GetById(c *gin.Context) {
 		return
 	}
 	user := a.User()
-	outRoom := a.GetRoomOut(user, roomId)
-	a.OK(outRoom)
+	outRoom, msg := a.GetRoomOut(user, roomId)
+	if outRoom == nil {
+		a.ErrorInternal(msg)
+	} else {
+		a.OK(outRoom)
+	}
 }
 
 func (a *roomApi) Create(c *gin.Context) {
 
 	var createRoom DTO.CreateRoom
-	if a.Bind(&createRoom) != nil {
+	if !a.Bind(&createRoom) {
 		return
 	}
 	if len(createRoom.Title) == 0 {
@@ -50,18 +54,26 @@ func (a *roomApi) Create(c *gin.Context) {
 		return
 	}
 	user := a.User()
-	room := a.CreateRoom(user, createRoom.Title, createRoom.Password)
-	a.OK(room)
+	room, msg := a.CreateRoom(user, createRoom.Title, createRoom.Password)
+	if msg != "" {
+		a.ErrorInternal(msg)
+	} else {
+		a.OK(room)
+	}
 }
 
 func (a *roomApi) Join(c *gin.Context) {
 	var room DTO.Room
-	if a.Bind(&room) != nil {
+	if !a.Bind(&room) {
 		return
 	}
 	user := a.User()
 	msg := a.JoinRoom(user, &room)
-	a.OK(msg)
+	if msg != "" {
+		a.ErrorInternal(msg)
+	} else {
+		a.OK("加入成功")
+	}
 }
 
 func (a *roomApi) Exit(c *gin.Context) {

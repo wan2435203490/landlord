@@ -27,6 +27,11 @@ func IsPair(cards []*pojo.Card) bool {
 }
 
 func isAllGradeEqual(cards []*pojo.Card) bool {
+	return isAllGradeEquals(cards...)
+
+}
+
+func isAllGradeEquals(cards ...*pojo.Card) bool {
 	card0 := cards[0]
 	for _, card := range cards {
 		if !card.EqualsByGrade(card0) {
@@ -171,7 +176,7 @@ func IsStraightPair(cards []*pojo.Card) bool {
 	return false
 }
 
-// 是否飞机
+// 是否飞机 333444
 func IsAircraft(cards []*pojo.Card) bool {
 	n := len(cards)
 	//最低双飞
@@ -180,13 +185,17 @@ func IsAircraft(cards []*pojo.Card) bool {
 	}
 	SortCards(cards)
 
-	for i := 0; i < n; i += 3 {
+	//KKKAAA222 只循环到AAA
+	for i := 0; i < n-3; i += 3 {
 
-		if !EqualsGrade(cards, i, i+1, i+2) {
+		if !EqualsGrade(cards, i, i+1, i+2) ||
+			cards[i].Grade+1 != cards[i+3].Grade {
 			return false
 		}
 
-		if i+3 < n && cards[i].Grade+1 != cards[i+3].Grade {
+		//A和2不能连
+		// card > K循环到A 说明后面还有2
+		if cards[i].Grade > enum.Eleventh {
 			return false
 		}
 	}
@@ -228,7 +237,10 @@ func IsAircraftWithPairWing(cards []*pojo.Card) (bool, enum.CardGrade) {
 			fallthrough
 		case 2:
 			wingGrades = append(wingGrades, g)
-		case 3:
+		case 3: //A和2不能连
+			if g > enum.Twelfth {
+				return false, -1
+			}
 			airGrades = append(airGrades, g)
 		default:
 			return false, -1
@@ -289,6 +301,10 @@ func IsAircraftWithSingleWing(cards []*pojo.Card) (bool, enum.CardGrade) {
 	for g, c := range allGrades {
 		switch c {
 		case 3:
+			//A和2不能连
+			if g > enum.Twelfth {
+				return false, -1
+			}
 			airGrades = append(airGrades, g)
 		case 2:
 			wingGrades = append(wingGrades, g)

@@ -17,6 +17,8 @@ func CorsHandler() gin.HandlerFunc {
 		//Release all option pre-requests
 		if context.Request.Method == http.MethodOptions {
 			context.JSON(http.StatusOK, "Options Request!")
+			context.Abort()
+			return
 		}
 		context.Next()
 	}

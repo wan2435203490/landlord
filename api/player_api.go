@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"landlord/sdk/api"
 	"landlord/svc"
+	"sort"
 )
 
 var PlayerApi playerApi
@@ -15,8 +16,18 @@ type playerApi struct {
 
 func (a *playerApi) Cards(c *gin.Context) {
 	user := a.User()
-	cards := a.GetPlayerCards(user)
-	a.OK(cards)
+	cards, msg := a.GetPlayerCards(user)
+	if msg != "" {
+		a.ErrorInternal(msg)
+	} else {
+		sort.Slice(cards, func(i, j int) bool {
+			if cards[i].Grade == cards[j].Grade {
+				return cards[i].Type > cards[j].Type
+			}
+			return cards[i].Grade > cards[j].Grade
+		})
+		a.OK(cards)
+	}
 }
 
 func (a *playerApi) Round(c *gin.Context) {

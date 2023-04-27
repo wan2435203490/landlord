@@ -25,6 +25,6 @@ const (
 	Fifteenth
 )
 
-func (g0 CardGrade) CompareGrade(g1 CardGrade) bool {
+func (g0 CardGrade) GreatThanGrade(g1 CardGrade) bool {
 	return g0 > g1
 }

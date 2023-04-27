@@ -47,6 +47,7 @@ func InitRouter(engine *gin.Engine) {
 		game.POST("/bid", GameApi.Bid)
 		game.POST("/play", GameApi.Play)
 		game.POST("/pass", GameApi.Pass)
+		game.POST("/give", GameApi.Give)
 	}
 
 	player := engine.Group("/player")
@@ -59,7 +60,7 @@ func InitRouter(engine *gin.Engine) {
 		player.GET("/bidding", PlayerApi.Bidding)
 	}
 
-	room := engine.Group("/room")
+	room := engine.Group("/rooms")
 	{
 		room.Use(WithRoomApi)
 		room.GET("", RoomApi.Rooms)

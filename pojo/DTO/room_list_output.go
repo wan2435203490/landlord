@@ -12,7 +12,6 @@ type RoomListOutput struct {
 	Locked     bool            `json:"locked"`
 	UserList   []*UserOut      `json:"userList"`
 	RoomStatus enum.RoomStatus `json:"roomStatus"`
-	Status     string          `json:"status"`
 }
 
 func RoomListOutputFromRoom(room *pojo.Room) *RoomListOutput {
@@ -23,7 +22,5 @@ func RoomListOutputFromRoom(room *pojo.Room) *RoomListOutput {
 		Locked:     room.Locked,
 		UserList:   ToUserOutList(room.UserList),
 		RoomStatus: room.RoomStatus,
-		//json enum问题
-		Status: room.RoomStatus.GetRoomStatus(),
 	}
 }

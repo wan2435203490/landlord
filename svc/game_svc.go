@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"landlord/common/enum"
+	"landlord/common/utils"
 	"landlord/db"
 	"landlord/internal"
 	"landlord/internal/component"
@@ -49,18 +50,69 @@ func (s *GameSvc) UnReadyGame(user *db.User) string {
 	return "success"
 }
 
-func (s *GameSvc) Want(user *db.User, score int) {
+// Want 低于3分时，NextPlayerBid
+func (s *GameSvc) Want(user *db.User, score int) string {
 	room := component.RC.GetUserRoom(user.Id)
+
+	if room.Multiple >= score {
+		return "抢地主失败：比上一家叫分低"
+	}
 	log.Printf("[%s] 玩家 %s 叫牌，分数为 %d 分\n", room.Id, user.UserName, score)
 
-	room.Multiple = score
+	player := room.GetPlayerByUserId(user.Id)
 
+	room.Multiple = score
+	//记录最近一次叫分的playerId
+	room.LatestBidId = player.Id
+
+	if score > 2 {
+		var landlord *db.User
+		for _, player := range room.PlayerList {
+			if player.User.Id == user.Id {
+				if player.Id != room.BiddingPlayerId {
+					return "不是当前用户的叫牌回合"
+				}
+				landlord = player.User
+				room.StepNum = player.Id
+				player.Identity = enum.Landlord
+				player.AddCards(room.Distribution.TopCards)
+			} else {
+				player.Identity = enum.Farmer
+			}
+		}
+		if landlord == nil {
+			return "选取的地主玩家不能为空"
+		}
+		room.PrePlayTime = time.Now().UnixMilli()
+		component.RC.UpdateRoom(room)
+		component.NC.Send2Room(room.Id, ws.NewBidEnd())
+		component.NC.Send2User(landlord.Id, ws.NewPleasePlayCard())
+		log.Printf("[%s] 玩家 %s 成为地主", room.Id, landlord.UserName)
+
+	} else {
+		nextPlayerId := player.GetNextPlayerId()
+		//bid一圈
+		if room.BiddingPlayerId == room.EndBidId {
+			s.MustWant(room.LatestBidId, room)
+			return ""
+		}
+		room.IncrBiddingPlayer()
+
+		nextUser := room.GetUserByPlayerId(nextPlayerId)
+		fmt.Printf("[%s] 玩家 %d 抢地主，分数为", room.Id,
+			player.Id, score)
+
+		component.NC.Send2User(nextUser.Id, ws.NewBid(score))
+	}
+
+	return ""
+}
+
+// MustWant 叫了一圈地主 没有叫3分的情况 都没人叫地主就默认第一家是地主 叫1分
+func (s *GameSvc) MustWant(landlordPlayerId int, room *pojo.Room) {
 	var landlord *db.User
 	for _, player := range room.PlayerList {
-		if player.User.Id == user.Id {
-			if player.Id != room.BiddingPlayerId {
-				panic("不是当前用户的叫牌回合")
-			}
+		if player.Id == landlordPlayerId {
 			landlord = player.User
 			room.StepNum = player.Id
 			player.Identity = enum.Landlord
@@ -69,10 +121,10 @@ func (s *GameSvc) Want(user *db.User, score int) {
 			player.Identity = enum.Farmer
 		}
 	}
-	if landlord == nil {
-		//maybe game over？
-		panic("选取的地主玩家不能为空")
+	if room.Multiple < 1 {
+		room.Multiple = 1
 	}
+
 	room.PrePlayTime = time.Now().UnixMilli()
 	component.RC.UpdateRoom(room)
 	component.NC.Send2Room(room.Id, ws.NewBidEnd())
@@ -82,34 +134,41 @@ func (s *GameSvc) Want(user *db.User, score int) {
 
 func (s *GameSvc) NoWant(user *db.User) {
 	room := component.RC.GetUserRoom(user.Id)
-	room.IncrBiddingPlayer()
-
 	player := room.GetPlayerByUserId(user.Id)
 	nextPlayerId := player.GetNextPlayerId()
+
+	room.IncrBiddingPlayer()
+	//bid一圈
+	if room.BiddingPlayerId == room.EndBidId {
+		landlordPlayerId := utils.IfThen(room.LatestBidId > 0, room.LatestBidId, nextPlayerId).(int)
+		s.MustWant(landlordPlayerId, room)
+		return
+	}
+
 	nextUser := room.GetUserByPlayerId(nextPlayerId)
 	fmt.Printf("[%s] 玩家 %d 选择不叫，由下家 %d 玩家叫牌", room.Id,
 		player.Id, nextPlayerId)
 
-	component.NC.Send2User(nextUser.Id, ws.NewBid())
+	component.NC.Send2User(nextUser.Id, ws.NewBid(0))
 }
 
-func (s *GameSvc) PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResult {
+func (s *GameSvc) PlayCard(user *db.User, cardList []*pojo.Card) (*pojo.RoundResult, string) {
 	room := component.RC.GetUserRoom(user.Id)
 	marshal, _ := json.Marshal(cardList)
 	fmt.Printf("[%s] 玩家 %s 出牌: %s", room.Id, user.UserName, string(marshal))
 
 	player := room.GetPlayerByUserId(user.Id)
 
-	cardType := internal.GetCardsType(cardList)
+	cardType := internal.GetCardsType(cardList...)
 	if cardType == -1 {
 		fmt.Printf("[%s] 玩家 %s 打出的牌不符合规则", room.Id, user.UserName)
-		panic("玩家打出的牌不符合规则")
+		return nil, "玩家打出的牌不符合规则"
 	}
 	if room.PreCards != nil && room.PrePlayerId != player.Id {
-		preType := internal.GetCardsType(room.PreCards)
+		preType := internal.GetCardsType(room.PreCards...)
 		canPlay := internal.CanPlayCards(cardList, room.PreCards, cardType, preType)
 		if !canPlay {
-			panic("该玩家出的牌管不了上家")
+			return nil, "该玩家出的牌管不了上家"
 		}
 	}
 	removeNextPlayerRecentCards(room, player)
@@ -141,7 +200,7 @@ func (s *GameSvc) PlayCard(user *db.User, cardList []*pojo.Card) *pojo.RoundResu
 	}
 	room.PrePlayTime = time.Now().UnixMilli()
 	component.RC.UpdateRoom(room)
-	return result
+	return result, ""
 }
 
 func (s *GameSvc) PassGame(user *db.User) {
@@ -158,9 +217,9 @@ func (s *GameSvc) PassGame(user *db.User) {
 	component.NC.Send2Room(room.Id, ws.NewPass(user))
 }
 
-func (s *GameSvc) StartGame(room *pojo.Room) {
+func (s *GameSvc) StartGame(room *pojo.Room) string {
 	if room.RoomStatus == enum.Playing {
-		panic("房间游戏已经开始")
+		return "房间游戏已经开始"
 	} else {
 		room.RoomStatus = enum.Playing
 	}
@@ -171,7 +230,7 @@ func (s *GameSvc) StartGame(room *pojo.Room) {
 
 	for _, player := range room.PlayerList {
 		cards := distribution.GetCards(player.Id)
-		player.Cards = cards
+		player.AddCards(cards)
 		player.Ready = true
 	}
 
@@ -181,9 +240,27 @@ func (s *GameSvc) StartGame(room *pojo.Room) {
 	rand.Seed(time.Now().Unix())
 	n := rand.Intn(3) + 1
 	room.BiddingPlayerId = n
+	room.EndBidId = n + 3
 	player := room.GetPlayer(n)
-	component.NC.Send2User(player.User.Id, ws.NewBid())
+	component.NC.Send2User(player.User.Id, ws.NewBid(0))
 	component.RC.UpdateRoom(room)
+
+	return ""
+}
+
+// GiveCards 推荐出牌
+func (s *GameSvc) GiveCards(user *db.User) [][]*pojo.Card {
+
+	room := component.RC.GetUserRoom(user.Id)
+	if room == nil || room.PreCards == nil {
+		return nil
+	}
+
+	player := room.GetPlayerByUserId(user.Id)
+
+	given := internal.GivePlayCards(player.Cards, room.PreCards)
+
+	return given
 }
 
 func isSpring(room *pojo.Room, winner *pojo.Player) bool {

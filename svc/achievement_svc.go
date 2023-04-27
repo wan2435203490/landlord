@@ -71,7 +71,7 @@ func (s *AchievementSvc) UpdateAchievement(achievement *db.Achievement) error {
 }
 
 func (s *AchievementSvc) ExistUser(userId string) error {
-	err := db.MySQL.Find(&db.User{}, userId).Error
+	err := db.MySQL.Find(&db.User{}, "id=?", userId).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("用户不存在")

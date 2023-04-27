@@ -24,7 +24,7 @@ var rateLimiterMap sync.Map
 func (a *chatApi) Chat(c *gin.Context) {
 
 	var chat DTO.Chat
-	if a.Bind(&chat) != nil {
+	if !a.Bind(&chat) {
 		return
 	}
 
@@ -43,8 +43,12 @@ func (a *chatApi) Chat(c *gin.Context) {
 		res := component.NC.Send2Room(room.Id, msg)
 		a.OK(res)
 	case enum.All.DimensionType():
-		component.NC.Send2AllUser(msg)
-		a.OK(true)
+		msg := component.NC.Send2AllUser(msg)
+		if msg != "" {
+			a.ErrorInternal(msg)
+		} else {
+			a.OK(true)
+		}
 	default:
 		a.ErrorInternal(fmt.Sprintf("不支持的聊天范围:%s", chat.Dimension))
 	}

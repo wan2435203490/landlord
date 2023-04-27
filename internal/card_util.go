@@ -7,7 +7,7 @@ import (
 )
 
 // 抽象type 获取一个可比较的值出来
-func GetCardsType(cards []*pojo.Card) enum.Type {
+func GetCardsType(cards ...*pojo.Card) enum.Type {
 	if IsSingle(cards) {
 		return enum.Single
 	}
@@ -57,6 +57,9 @@ func GetCardsType(cards []*pojo.Card) enum.Type {
 // 对牌进行从小到大地排序 花色？
 func SortCards(cards []*pojo.Card) {
 	sort.Slice(cards, func(i, j int) bool {
+		if cards[i].Grade == cards[j].Grade {
+			return cards[i].Type < cards[j].Type
+		}
 		return cards[i].Grade < cards[j].Grade
 	})
 }

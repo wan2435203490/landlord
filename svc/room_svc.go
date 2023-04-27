@@ -16,36 +16,45 @@ type RoomSvc struct {
 	service.Service
 }
 
-func (s *RoomSvc) GetRoomByUser(user *db.User) *pojo.Room {
-	return component.RC.GetUserRoom(user.Id)
+func (s *RoomSvc) GetRoomByUser(user *db.User) (*pojo.Room, string) {
+	return component.RC.GetUserRoom(user.Id), ""
 }
 
-func (s *RoomSvc) GetRoomOut(user *db.User, roomId string) *DTO.RoomOut {
-	room := component.RC.GetRoom(roomId)
+func (s *RoomSvc) GetRoomOut(user *db.User, roomId string) (*DTO.RoomOut, string) {
+
+	room, msg := component.RC.GetRoom(roomId)
+	if msg != "" {
+		return nil, msg
+	}
 	if !s.canVisit(user, room) {
-		panic("你无权查看本房间的信息")
+		return nil, "你无权查看本房间的信息"
 	}
 	result := DTO.ToRoomOut(room)
 	for _, player := range result.PlayerList {
 		player.Online = component.WS.IsOnline(player.User.Id)
 	}
 	s.setCountDown(room, result)
-	return result
+	return result, ""
 }
 
-func (s *RoomSvc) CreateRoom(user *db.User, title, password string) *pojo.Room {
+func (s *RoomSvc) CreateRoom(user *db.User, title, password string) (*pojo.Room, string) {
 	return component.RC.CreateRoom(user, title, password)
 }
 
 func (s *RoomSvc) JoinRoom(user *db.User, dtoRoom *DTO.Room) string {
 	dtoRoomId := dtoRoom.Id
-	room := component.RC.GetRoom(dtoRoomId)
+	room, msg := component.RC.GetRoom(dtoRoomId)
+	if msg != "" {
+		return msg
+	}
 	if room.RoomStatus == enum.Playing {
-		panic("房间正在游戏中，无法加入!")
+		return "房间正在游戏中，无法加入!"
 	}
 	password := dtoRoom.Password
-	msg := component.RC.JoinRoom(dtoRoomId, password, user)
-	component.NC.Send2Room(dtoRoomId, ws.NewPlayerJoin(user))
+	msg = component.RC.JoinRoom(dtoRoomId, password, user)
+	if msg == "" {
+		component.NC.Send2Room(dtoRoomId, ws.NewPlayerJoin(user))
+	}
 	return msg
 }
 

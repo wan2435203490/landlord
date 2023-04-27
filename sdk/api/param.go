@@ -16,9 +16,9 @@ func (a *Api) Param(key string) string {
 }
 
 // Bind 参数校验
-func (a *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
+func (a *Api) Bind(d interface{}, bindings ...binding.Binding) bool {
 	if d == nil {
-		return a
+		return false
 	}
 	var err error
 	if len(bindings) == 0 {
@@ -49,5 +49,5 @@ func (a *Api) Bind(d interface{}, bindings ...binding.Binding) *Api {
 		a.ErrorInternal(a.Err.Error())
 	}
 
-	return a
+	return true
 }

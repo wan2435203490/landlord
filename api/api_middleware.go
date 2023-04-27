@@ -29,7 +29,7 @@ func WithAuthApi(c *gin.Context) {
 	c.Next()
 }
 func WithAchievementApi(c *gin.Context) {
-	AuthApi.MakeContext(c)
+	AchievementApi.MakeContext(c)
 	c.Next()
 }
 func WithChatApi(c *gin.Context) {
