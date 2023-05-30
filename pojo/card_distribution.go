@@ -53,16 +53,28 @@ func (d *CardDistribution) Deal() {
 	d.Player3Cards = append(d.Player3Cards, d.AllCardList[34:51]...)
 	d.TopCards = d.AllCardList[51:]
 
-	sort.Slice(d.Player1Cards, func(i, j int) bool {
-		return d.Player1Cards[i].Grade < d.Player1Cards[j].Grade
-	})
-	sort.Slice(d.Player2Cards, func(i, j int) bool {
-		return d.Player2Cards[i].Grade < d.Player2Cards[j].Grade
-	})
-	sort.Slice(d.Player3Cards, func(i, j int) bool {
-		return d.Player3Cards[i].Grade < d.Player3Cards[j].Grade
-	})
+	SortCards(d.Player1Cards)
+	SortCards(d.Player2Cards)
+	SortCards(d.Player3Cards)
+	//sort.Slice(d.Player1Cards, func(i, j int) bool {
+	//	return d.Player1Cards[i].Grade < d.Player1Cards[j].Grade
+	//})
+	//sort.Slice(d.Player2Cards, func(i, j int) bool {
+	//	return d.Player2Cards[i].Grade < d.Player2Cards[j].Grade
+	//})
+	//sort.Slice(d.Player3Cards, func(i, j int) bool {
+	//	return d.Player3Cards[i].Grade < d.Player3Cards[j].Grade
+	//})
 
+}
+
+func SortCards(cards []*Card) {
+	sort.Slice(cards, func(i, j int) bool {
+		if cards[i].Grade == cards[j].Grade {
+			return cards[i].Type < cards[j].Type
+		}
+		return cards[i].Grade < cards[j].Grade
+	})
 }
 
 func (d *CardDistribution) GetCards(number int) []*Card {

@@ -16,7 +16,7 @@ func ToDimensionType(str string) DimensionType {
 	switch str {
 	case "ALL":
 		return All
-	case "Room":
+	case "ROOM":
 		return Room
 	default:
 		return Room

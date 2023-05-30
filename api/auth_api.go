@@ -26,7 +26,7 @@ func (a *authApi) Login(c *gin.Context) {
 
 	user := &db.User{UserName: login.UserName, Password: login.Password}
 	var s svc.UserSvc
-	if a.IfError(s.GetOrInsertUser(user)) != nil {
+	if a.IsError(s.GetOrInsertUser(user)) {
 		return
 	}
 

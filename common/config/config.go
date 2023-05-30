@@ -29,6 +29,18 @@ type config struct {
 		MaxSecondsForEveryRound int64 `yaml:"max_seconds_for_every_round"`
 	}
 
+	Session struct {
+		UserSessionKey string `yaml:"user_session_key"`
+		Secret         string `yaml:"secret"`
+		Name           string `yaml:"name"`
+	}
+
+	TLS struct {
+		Addr string `yaml:"addr"`
+		Cert string `yaml:"cert"`
+		Key  string `yaml:"key"`
+	}
+
 	MySQL struct {
 		Address       []string `yaml:"address"`
 		UserName      string   `yaml:"username"`

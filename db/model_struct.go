@@ -38,7 +38,7 @@ func (a *Achievement) CalculateScore(isWin bool) {
 type User struct {
 	Id        string    `gorm:"column:id;primary_key;type:varchar(36)" json:"id"`
 	UserName  string    `gorm:"column:username" json:"username"`
-	Password  string    `gorm:"column:password" json:"password"`
+	Password  string    `gorm:"column:password" json:"-"`
 	OpenId    string    `gorm:"column:openid" json:"openid"`
 	Gender    string    `gorm:"column:gender" json:"gender"`
 	Money     float64   `gorm:"column:money" json:"money"`

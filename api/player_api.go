@@ -17,13 +17,11 @@ type playerApi struct {
 func (a *playerApi) Cards(c *gin.Context) {
 	user := a.User()
 	cards, msg := a.GetPlayerCards(user)
+
 	if msg != "" {
 		a.ErrorInternal(msg)
 	} else {
-		sort.Slice(cards, func(i, j int) bool {
-			if cards[i].Grade == cards[j].Grade {
-				return cards[i].Type > cards[j].Type
-			}
+		sort.SliceStable(cards, func(i, j int) bool {
 			return cards[i].Grade > cards[j].Grade
 		})
 		a.OK(cards)
@@ -50,6 +48,6 @@ func (a *playerApi) PlayerPass(c *gin.Context) {
 
 func (a *playerApi) Bidding(c *gin.Context) {
 	user := a.User()
-	can := a.CanBid(user)
-	a.OK(can)
+	score := a.CanBid(user)
+	a.OK(score)
 }

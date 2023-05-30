@@ -11,35 +11,49 @@ func GivePlayCards(cards, preCards []*pojo.Card) [][]*pojo.Card {
 	var res [][]*pojo.Card
 
 	preType := GetCardsType(preCards...)
-	preGrade := preCards[0].Grade
 	n := len(preCards)
+	var preGrade enum.CardGrade
+
 	switch preType {
 	case enum.Single:
+		preGrade = preCards[0].Grade
 		res = GiveSingleCards(cards, preGrade)
 	case enum.Pair:
+		preGrade = preCards[0].Grade
 		res = GivePairCards(cards, preGrade)
 	case enum.ThreeType:
-		fallthrough
+		preGrade = preCards[0].Grade
+		res = GiveThreeCards(cards, preGrade)
 	case enum.ThreeWithOne:
-		fallthrough
+		preGrade = preCards[1].Grade
+		res = GiveThreeCards(cards, preGrade)
 	case enum.ThreeWithPair:
+		preGrade = preCards[2].Grade
 		res = GiveThreeCards(cards, preGrade)
 	case enum.FourWithTwo:
-		fallthrough
+		preGrade = preCards[3].Grade
+		res = GiveFourCards(cards, preGrade)
 	case enum.FourWithFour:
-		fallthrough
+		_, preGrade = IsFourWithFour(preCards)
+		res = GiveFourCards(cards, preGrade)
 	case enum.Bomb:
+		preGrade = preCards[0].Grade
 		res = GiveFourCards(cards, preGrade)
 	case enum.JokerBomb:
 	case enum.Straight:
+		preGrade = preCards[0].Grade
 		res = GiveStraightCards(cards, preGrade, n)
 	case enum.StraightPair:
+		preGrade = preCards[0].Grade
 		res = GiveStraightPairCards(cards, preGrade, n)
 	case enum.Aircraft:
-		fallthrough
+		preGrade = preCards[0].Grade
+		res = GiveAircraft(cards, preGrade, n)
 	case enum.AircraftWithSingleWings:
-		fallthrough
+		_, preGrade = IsAircraftWithSingleWing(cards)
+		res = GiveAircraft(cards, preGrade, n)
 	case enum.AircraftWithPairWings:
+		_, preGrade = IsAircraftWithPairWing(cards)
 		res = GiveAircraft(cards, preGrade, n)
 	}
 

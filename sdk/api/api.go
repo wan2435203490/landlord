@@ -31,12 +31,13 @@ func (a *Api) AddError(err error) {
 	return
 }
 
-// IfError 如果有error则write json response
-func (a *Api) IfError(err error) error {
+// IsError 如果有error则write json response
+func (a *Api) IsError(err error) bool {
 	if err != nil {
 		a.ErrorInternal(err.Error())
+		return true
 	}
-	return err
+	return false
 }
 
 //func (a *Api) Build(c *gin.Context, s service.IService, d interface{}, bindings ...binding.Binding) error {
@@ -48,7 +49,12 @@ func (a *Api) MakeContext(c *gin.Context) error {
 	a.Context = c
 	//a.Logger = GetRequestLogger(c)
 
-	return a.IfError(a.MakeOrm())
+	err := a.MakeOrm()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // MakeOrm 设置Orm DB

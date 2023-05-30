@@ -59,15 +59,18 @@ func (s *PlayerSvc) CanPass(user *db.User) bool {
 	return room.PrePlayerId != player.Id
 }
 
-func (s *PlayerSvc) CanBid(user *db.User) bool {
+func (s *PlayerSvc) CanBid(user *db.User) int {
 	room := component.RC.GetUserRoom(user.Id)
 	if room.RoomStatus != enum.Playing {
 		//todo 处理错误时的情况
-		return false
+		return -1
 	}
 	if room.StepNum != 0 {
-		return false
+		return -1
 	}
 	player := room.GetPlayerByUserId(user.Id)
-	return player.Id == room.BiddingPlayerId
+	if player.Id != room.BiddingPlayerId {
+		return -1
+	}
+	return room.Multiple
 }

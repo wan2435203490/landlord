@@ -37,12 +37,14 @@ func (a *chatApi) Chat(c *gin.Context) {
 
 	msg := ws.NewChat(&chat, user)
 
-	switch chat.Dimension {
-	case enum.Room.DimensionType():
+	dimensionType := enum.ToDimensionType(chat.Dimension)
+
+	switch dimensionType {
+	case enum.Room:
 		room := component.RC.GetUserRoom(user.Id)
 		res := component.NC.Send2Room(room.Id, msg)
 		a.OK(res)
-	case enum.All.DimensionType():
+	case enum.All:
 		msg := component.NC.Send2AllUser(msg)
 		if msg != "" {
 			a.ErrorInternal(msg)
@@ -55,13 +57,14 @@ func (a *chatApi) Chat(c *gin.Context) {
 
 }
 
+// CheckLimit 限制短时间消息刷屏
 func CheckLimit(user *db.User) bool {
-	if limiter, ok := rateLimiterMap.Load(user.Id); ok {
-		return limiter.(*rate.Limiter).Allow()
-	} else {
+	limiter, ok := rateLimiterMap.Load(user.Id)
+	if !ok {
 		//每秒往桶中放r个令牌, 桶的容量b
-		limiter = rate.NewLimiter(.5, 4)
+		limiter = rate.NewLimiter(1, 4)
 		rateLimiterMap.Store(user.Id, limiter)
-		return limiter.(*rate.Limiter).Allow()
 	}
+
+	return limiter.(*rate.Limiter).Allow()
 }

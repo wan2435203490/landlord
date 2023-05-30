@@ -24,9 +24,9 @@ func (s *Service) AddError(err error) {
 }
 
 // AddError 报错即返回
-func (s *Service) IfError(err error) error {
-	return s.Api.IfError(err)
-}
+//func (s *Service) IsError(err error) error {
+//	return s.Api.IsError(err)
+//}
 
 //func (s *Service) Error(err error) {
 //	r.ErrorInternal(err.Error(), s.Context)

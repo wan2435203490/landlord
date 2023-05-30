@@ -35,7 +35,7 @@ func CreateToken(userId string) (string, error) {
 		return "", err
 	}
 
-	return tokenString, err
+	return tokenString, nil
 }
 
 func secret() jwt.Keyfunc {

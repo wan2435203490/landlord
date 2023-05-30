@@ -4,12 +4,21 @@ server:
   ip: localhost
   port: 8080
 
-frontend-host: localhost:9000
+frontend_host: localhost:9000
 
 landlords:
-  frontend-host: landlords.pushyzheng.com
-  jwt-secret: 298b8610-6835-4d12-b8ae-efba3dbcccad
+  frontend-host: landlords.xxx.com
   max_seconds_for_every_round: 30
+
+session:
+  user_session_key: curUser
+  secret: qwq
+  name: landlord-session
+
+tls:
+  addr: :443
+  cert: config/server.crt
+  key: config/server.key
 
 database:
   driver: MySQL #SQLite MySQL

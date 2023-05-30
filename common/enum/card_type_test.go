@@ -23,3 +23,18 @@ func TestJson(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestFor(t *testing.T) {
+	var ids []*int
+	for i := 0; i < 10; i++ {
+		ids = append(ids, &i)
+		//if i == 5 {
+		//	i = 8
+		//}
+	}
+
+	for _, v := range ids {
+		fmt.Println(v, *v)
+	}
+	fmt.Printf("%#v", ids)
+}

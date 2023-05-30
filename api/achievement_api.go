@@ -20,22 +20,23 @@ func (a *achievementApi) GetAchievementByUserId(c *gin.Context) {
 
 	userId := a.Param("userId")
 	if userId == "" {
+		a.ErrorInternal("userId is empty")
 		return
 	}
 
-	if a.IfError(a.ExistUser(userId)) != nil {
+	if a.IsError(a.ExistUser(userId)) {
 		return
 	}
 
 	achievement := &db.Achievement{UserId: userId}
-	if a.IfError(a.FindAchievementByUserId(achievement)) != nil {
+	if a.IsError(a.FindAchievementByUserId(achievement)) {
 		return
 	}
 
 	if achievement.Id == "" {
 		//achievement不存在
 		achievement.Id = strings.ReplaceAll(uuid.NewString(), "-", "")
-		if a.IfError(a.CreateAchievement(achievement)) != nil {
+		if a.IsError(a.CreateAchievement(achievement)) {
 			return
 		}
 	}

@@ -41,33 +41,33 @@ func (t *Type) UnmarshalJSON(b []byte) error {
 	switch strings.ToUpper(s) {
 	default:
 		*t = Single
-	case "单张":
+	case "SINGLE":
 		*t = Single
-	case "对子":
+	case "PAIR":
 		*t = Pair
-	case "三张":
+	case "THREE":
 		*t = ThreeType
-	case "三带一":
+	case "THREE_WITH_ONE":
 		*t = ThreeWithOne
-	case "三带一对":
+	case "THREE_WITH_PAIR":
 		*t = ThreeWithPair
-	case "四带二":
+	case "FOUR_WITH_TWO":
 		*t = FourWithTwo
-	case "四带两对":
+	case "FOUR_WITH_FOUR":
 		*t = FourWithFour
-	case "炸弹":
+	case "BOMB":
 		*t = Bomb
-	case "王炸":
+	case "JOKER_BOMB":
 		*t = JokerBomb
-	case "顺子":
+	case "STRAIGHT":
 		*t = Straight
-	case "连对":
+	case "STRAIGHT_PAIR":
 		*t = StraightPair
-	case "飞机":
+	case "AIRCRAFT":
 		*t = Aircraft
-	case "飞机带翅膀":
+	case "AIRCRAFT_WITH_SINGLE_WINGS":
 		*t = AircraftWithSingleWings
-	case "飞机带大炮":
+	case "AIRCRAFT_WITH_PAIR_WINGS":
 		*t = AircraftWithPairWings
 	}
 
@@ -78,35 +78,35 @@ func (t Type) MarshalJSON() ([]byte, error) {
 	var s string
 	switch t {
 	default:
-		s = "单张"
+		s = "SINGLE"
 	case Single:
-		s = "单张"
+		s = "SINGLE"
 	case Pair:
-		s = "对子"
+		s = "PAIR"
 	case ThreeType:
-		s = "三张"
+		s = "THREE"
 	case ThreeWithOne:
-		s = "三带一"
+		s = "THREE_WITH_ONE"
 	case ThreeWithPair:
-		s = "三带一对"
+		s = "THREE_WITH_PAIR"
 	case FourWithTwo:
-		s = "四带二"
+		s = "FOUR_WITH_TWO"
 	case FourWithFour:
-		s = "四带两对"
+		s = "FOUR_WITH_FOUR"
 	case Bomb:
-		s = "炸弹"
+		s = "BOMB"
 	case JokerBomb:
-		s = "王炸"
+		s = "JOKER_BOMB"
 	case Straight:
-		s = "顺子"
+		s = "STRAIGHT"
 	case StraightPair:
-		s = "连对"
+		s = "STRAIGHT_PAIR"
 	case Aircraft:
-		s = "飞机"
+		s = "AIRCRAFT"
 	case AircraftWithSingleWings:
-		s = "飞机带翅膀"
+		s = "AIRCRAFT_WITH_SINGLE_WINGS"
 	case AircraftWithPairWings:
-		s = "飞机带大炮"
+		s = "AIRCRAFT_WITH_PAIR_WINGS"
 	}
 
 	return json.Marshal(s)

@@ -2,6 +2,7 @@ package api
 
 import (
 	"landlord/common/utils"
+	"log"
 	"net/http"
 )
 
@@ -29,6 +30,7 @@ func (a *Api) OK(data any) {
 	res.Data = data
 
 	a.Context.JSON(http.StatusOK, res)
+	log.Printf("%#v\n", data)
 }
 
 func (a *Api) Error(httpStatus int, msg string) {
@@ -38,6 +40,7 @@ func (a *Api) Error(httpStatus int, msg string) {
 	res.Code = httpStatus
 
 	a.Context.JSON(httpStatus, res)
+	log.Printf("%#v\n", msg)
 }
 
 func (a *Api) ErrorInternal(msg string) {

@@ -26,7 +26,8 @@ func (a *userApi) Update(c *gin.Context) {
 	user.Avatar = dtoUser.Avatar
 	user.Gender = dtoUser.Gender
 
-	if a.UpdateUser(user) != nil {
+	if err := a.UpdateUser(user); err != nil {
+		a.ErrorInternal(err.Error())
 		return
 	}
 	a.SetUser(user)

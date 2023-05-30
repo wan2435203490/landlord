@@ -15,7 +15,7 @@ func (a *Api) Param(key string) string {
 	return value
 }
 
-// Bind 参数校验
+// Bind validate && write error json response if error
 func (a *Api) Bind(d interface{}, bindings ...binding.Binding) bool {
 	if d == nil {
 		return false

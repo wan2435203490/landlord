@@ -63,3 +63,13 @@ func SortCards(cards []*pojo.Card) {
 		return cards[i].Grade < cards[j].Grade
 	})
 }
+
+// 从大到小
+func SortCardsDesc(cards []*pojo.Card) {
+	sort.Slice(cards, func(i, j int) bool {
+		if cards[i].Grade == cards[j].Grade {
+			return cards[i].Type > cards[j].Type
+		}
+		return cards[i].Grade > cards[j].Grade
+	})
+}
