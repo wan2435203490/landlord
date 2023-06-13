@@ -28,7 +28,8 @@ database:
 #  password:
 
 mysql:
-  address: [ docker.for.mac.localhost:3306 ]
+#  address: [ docker.for.mac.localhost:3306 ]
+  address: [ localhost:3306 ]
   username: root
   password: 123456
   database_name: landlord
@@ -45,6 +46,7 @@ tokenpolicy:
 
 websocket:
   port: [ 80 ]
+#  port: [ 443 ]
   max_conn_num: 10000
   max_msg_len: 4096
   handshake_time_out: 10 #second

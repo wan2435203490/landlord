@@ -29,7 +29,7 @@ type UserConn struct {
 var WS wsServer
 
 type wsServer struct {
-	Port       string //8080
+	Port       string //443
 	MaxConnNum int
 	UpGrader   *websocket.Upgrader
 	//UserConnMap map[string]*UserConn
